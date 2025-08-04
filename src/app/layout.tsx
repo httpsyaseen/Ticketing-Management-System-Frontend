@@ -6,6 +6,7 @@ import ToastProvider from "@/components/toaster";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/sidebar";
 import { AppHeader } from "@/components/header";
+import { TicketProvider } from "@/context/ticket-context";
 
 const spaceMono = Space_Mono({
   subsets: ["latin"],
@@ -40,6 +41,8 @@ export default function RootLayout({
       >
         <ToastProvider />
         <AuthProvider>
+                        <TicketProvider>
+
           <SidebarProvider>
             <AppSidebar />
             <SidebarInset>
@@ -47,6 +50,7 @@ export default function RootLayout({
               <main className="flex flex-1 flex-col">{children}</main>
             </SidebarInset>
           </SidebarProvider>
+          </TicketProvider>
         </AuthProvider>
       </body>
     </html>

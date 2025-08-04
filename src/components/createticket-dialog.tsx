@@ -27,6 +27,7 @@ import { TicketIcon, ImagePlusIcon, XIcon } from "lucide-react"; // Added icons
 import { useAuth } from "@/context/auth-context";
 import api from "@/lib/api";
 import { addTicketToSessionStorage } from "@/utils/helper";
+import { useTicket } from "@/context/ticket-context";
 
 export function CreateTicketDialog() {
   const [isOpen, setIsOpen] = useState(false);
@@ -34,8 +35,9 @@ export function CreateTicketDialog() {
   const [description, setDescription] = useState("");
   const [images, setImages] = useState<File[]>([]);
   const [department, setDepartment] = useState("");
-  const { departments, user } = useAuth();
-
+  const {user } = useAuth();
+  const {departments} = useTicket()
+  console.log(departments)
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files) {
