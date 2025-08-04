@@ -42,7 +42,6 @@ export default function TicketManagementPage() {
   useEffect(() => {
     async function fetchTickets() {
       try {
-        console.log("user from main", user);
         const res = await api.get(`/ticket/${user?.assignedTo?._id}`);
         const data = res.data;
         if (data?.data?.tickets) {

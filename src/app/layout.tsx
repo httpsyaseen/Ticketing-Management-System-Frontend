@@ -14,15 +14,15 @@ const spaceMono = Space_Mono({
   variable: "--font-space-mono", // optional if you want to use as CSS variable
 });
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+// const geistSans = Geist({
+//   variable: "--font-geist-sans",
+//   subsets: ["latin"],
+// });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+// const geistMono = Geist_Mono({
+//   variable: "--font-geist-mono",
+//   subsets: ["latin"],
+// });
 
 export const metadata: Metadata = {
   title: "Ticket Management System (PSBA)",
@@ -41,15 +41,14 @@ export default function RootLayout({
       >
         <ToastProvider />
         <AuthProvider>
-                        <TicketProvider>
-
-          <SidebarProvider>
-            <AppSidebar />
-            <SidebarInset>
-              <AppHeader />
-              <main className="flex flex-1 flex-col">{children}</main>
-            </SidebarInset>
-          </SidebarProvider>
+          <TicketProvider>
+            <SidebarProvider>
+              <AppSidebar />
+              <SidebarInset>
+                <AppHeader />
+                <main className="flex flex-1 flex-col">{children}</main>
+              </SidebarInset>
+            </SidebarProvider>
           </TicketProvider>
         </AuthProvider>
       </body>

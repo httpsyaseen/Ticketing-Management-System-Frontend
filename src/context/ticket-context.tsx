@@ -10,20 +10,15 @@ import {
 import api from "@/lib/api";
 import toast from "react-hot-toast";
 import axios from "axios";
-import { Ticket } from "@/types/tickets";
-
-type Department = {
-  _id: string;
-  name: string;
-};
+import { Ticket, Department } from "@/types/tickets";
 
 type TicketContextType = {
   departments: Department[];
-  tickets: Ticket[];
+  viewTicket: Ticket;
   myTickets: Ticket[];
   assignTickets: Ticket[];
   setDepartments: React.Dispatch<React.SetStateAction<Department[]>>;
-  setTickets: React.Dispatch<React.SetStateAction<Ticket[]>>;
+  setViewTicket: React.Dispatch<React.SetStateAction<Ticket>>;
   setMyTickets: React.Dispatch<React.SetStateAction<Ticket[]>>;
   setAssignTickets: React.Dispatch<React.SetStateAction<Ticket[]>>;
 };
@@ -34,7 +29,7 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [assignTickets, setAssignTickets] = useState<Ticket[]>([]);
   const [myTickets, setMyTickets] = useState<Ticket[]>([]);
-  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [viewTicket, setViewTicket] = useState<Ticket>({} as Ticket);
 
   useEffect(() => {
     const fetchDepartments = async () => {
@@ -43,7 +38,9 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
         setDepartments(res.data.data.departments);
       } catch (error) {
         if (axios.isAxiosError(error)) {
-          toast.error(error?.response?.data?.message || "Failed to fetch departments");
+          toast.error(
+            error?.response?.data?.message || "Failed to fetch departments"
+          );
         }
       }
     };
@@ -55,11 +52,11 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
     <TicketContext.Provider
       value={{
         departments,
-        tickets,
+        viewTicket,
         myTickets,
         assignTickets,
         setDepartments,
-        setTickets,
+        setViewTicket,
         setMyTickets,
         setAssignTickets,
       }}
