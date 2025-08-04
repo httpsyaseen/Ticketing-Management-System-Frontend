@@ -37,6 +37,7 @@ import { EstimateTimeDialog } from "@/components/estimatetime-dialog";
 import { ResolveTicketDialog } from "@/components/resolveticket-dialog";
 import ReferTicketDialog from "@/components/referdepartment-dialog";
 import toast from "react-hot-toast";
+import { useTicket } from "@/context/ticket-context";
 
 function formatTime(seconds: number) {
   const hours = Math.floor(seconds / 3600);
@@ -83,15 +84,18 @@ const dummyTicket: Ticket = {
 
 export default function TicketDetailPage() {
   const params = useParams();
-  const ticketId = params.id as string;
+
+  const {viewTicket} = useTicket()
   const [ticket, setTicket] = React.useState<Ticket>({} as Ticket);
   const [isLoading, setIsLoading] = React.useState(true);
 
+
   React.useEffect(() => {
-    const tempTicket = getTicketByIdFromSessionStorage(ticketId);
-    setTicket(tempTicket ?? dummyTicket);
+    // ()
+    console.log(viewTicket)
+    setTicket(viewTicket);
     setIsLoading(false);
-  }, [ticketId]);
+  }, [viewTicket]);
 
   const [newComment, setNewComment] = React.useState("");
   const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
@@ -129,7 +133,7 @@ export default function TicketDetailPage() {
     try {
       if (!newComment.trim()) return;
 
-      const response = await api.patch(`/ticket/add-comment/${ticketId}`, {
+      const response = await api.patch(`/ticket/add-comment/${ticket._id}`, {
         comment: newComment,
       });
 
@@ -380,7 +384,7 @@ export default function TicketDetailPage() {
         open={showEstimateDialog}
         onOpenChange={setShowEstimateDialog}
         setTicket={setTicket}
-        ticketId={ticketId}
+        ticketId={ticket._id}
       />
 
       {/* Resolve Dialog */}
@@ -388,7 +392,7 @@ export default function TicketDetailPage() {
         open={showResolveDialog}
         setOpen={setShowResolveDialog}
         setTicket={setTicket}
-        ticketId={ticketId}
+        ticketId={ticket._id}
       />
 
       {/* Refer Ticket Dialog */}

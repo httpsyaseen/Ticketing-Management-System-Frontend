@@ -21,6 +21,10 @@ type TicketContextType = {
   setViewTicket: React.Dispatch<React.SetStateAction<Ticket>>;
   setMyTickets: React.Dispatch<React.SetStateAction<Ticket[]>>;
   setAssignTickets: React.Dispatch<React.SetStateAction<Ticket[]>>;
+   updateTicket: (ticket: Ticket) => void;
+  addTicket: (ticket: Ticket) => void;
+    getTicketById: (id: string) => Ticket | undefined;
+
 };
 
 const TicketContext = createContext<TicketContextType>({} as TicketContextType);
@@ -48,6 +52,23 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
     fetchDepartments();
   }, []);
 
+  const addTicket = (ticket: Ticket) => {
+    setMyTickets((prev) => [...prev, ticket]);
+  };
+
+  const getTicketById = (id: string) => {
+    return myTickets.find((ticket) => ticket._id === id);
+  };
+
+  const updateTicket = (updated: Ticket) => {
+    setMyTickets((prev) =>
+      prev.map((ticket) => (ticket._id === updated._id ? updated : ticket))
+    );
+    if (viewTicket && viewTicket._id === updated._id) {
+      setViewTicket(updated);
+    }
+  };
+
   return (
     <TicketContext.Provider
       value={{
@@ -59,6 +80,9 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
         setViewTicket,
         setMyTickets,
         setAssignTickets,
+         getTicketById,
+        updateTicket,
+        addTicket,
       }}
     >
       {children}
@@ -67,3 +91,5 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
 };
 
 export const useTicket = () => useContext(TicketContext);
+
+

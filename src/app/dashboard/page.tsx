@@ -23,20 +23,20 @@ import { useAuth } from "@/context/auth-context";
 import api from "@/lib/api";
 import { useState, useEffect, useMemo } from "react";
 import { getStatusBadge } from "@/components/helper-components";
-import { formatDateTime, setTicketsToSessionStorage } from "@/utils/helper";
+import { formatDateTime,  } from "@/utils/helper";
 import { Ticket } from "@/types/tickets";
 import { useRouter } from "next/navigation";
 import { CreateTicketDialog } from "@/components/createticket-dialog";
-
+import { useTicket } from "@/context/ticket-context";
 export default function TicketManagementPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
+  const {setAssignTickets,assignTickets,setViewTicket} = useTicket()
 
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [rowsPerPage, setRowsPerPage] = useState("10");
   const [currentPage, setCurrentPage] = useState(1);
-  const [tickets, setTickets] = useState<Ticket[]>([]);
 
   // Fetch tickets from API and save to sessionStorage
   useEffect(() => {
@@ -45,8 +45,7 @@ export default function TicketManagementPage() {
         const res = await api.get(`/ticket/${user?.assignedTo?._id}`);
         const data = res.data;
         if (data?.data?.tickets) {
-          setTickets(data.data.tickets);
-          setTicketsToSessionStorage(data.data.tickets);
+          setAssignTickets(data.data.tickets);
         }
       } catch (err) {
         console.error("Failed to fetch tickets:", err);
@@ -59,7 +58,7 @@ export default function TicketManagementPage() {
 
   // Filter tickets based on active tab and search query
   const filteredTickets = useMemo(() => {
-    let filtered = tickets;
+    let filtered = assignTickets;
 
     // Filter by tab
     if (activeTab !== "all") {
@@ -85,7 +84,7 @@ export default function TicketManagementPage() {
     }
 
     return filtered;
-  }, [tickets, activeTab, searchQuery]);
+  }, [assignTickets, activeTab, searchQuery]);
 
   // Pagination
   const totalPages = Math.ceil(
@@ -101,14 +100,19 @@ export default function TicketManagementPage() {
   }, [activeTab, searchQuery, rowsPerPage]);
 
   const getTabCount = (status: string) => {
-    if (status === "all") return tickets.length;
-    return tickets.filter((ticket) => {
+    if (status === "all") return assignTickets.length;
+    return assignTickets.filter((ticket) => {
       const s = ticket.status?.toLowerCase();
       if (status === "resolved") return s === "resolved" || s === "closed";
       return s === status;
     }).length;
   };
 
+  const handleViewTicket = (ticketId:Ticket) => {
+    console.log(ticketId)
+    setViewTicket(ticketId)
+    router.push('/ticket/56')
+  }
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
       <div className="flex items-center justify-between">
@@ -189,9 +193,7 @@ export default function TicketManagementPage() {
                           variant="ghost"
                           size="sm"
                           className="text-black-600 hover:text-black-800 hover:bg-black-50 cursor-pointer"
-                          onClick={() => {
-                            router.push(`/ticket/${ticket._id}`);
-                          }}
+                          onClick={() => handleViewTicket(ticket)}
                         >
                           <Eye className="h-4 w-4 mr-1" />
                           View

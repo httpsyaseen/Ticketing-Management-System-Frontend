@@ -36,7 +36,7 @@ export function CreateTicketDialog() {
   const [images, setImages] = useState<File[]>([]);
   const [department, setDepartment] = useState("");
   const {user } = useAuth();
-  const {departments} = useTicket()
+  const {departments,addTicket} = useTicket()
   console.log(departments)
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -69,7 +69,7 @@ export function CreateTicketDialog() {
           "Content-Type": "multipart/form-data",
         },
       });
-      addTicketToSessionStorage(data.data.ticket);
+      addTicket(data.data.ticket);
       toast.success("Ticket created successfully!");
     } catch (error) {
       console.error("Error creating ticket:", error);
