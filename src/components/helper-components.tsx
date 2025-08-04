@@ -10,7 +10,7 @@ export function getStatusBadge(status: string) {
           Open
         </Badge>
       );
-    case "in-progress":
+    case "in progress":
       return (
         <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-100">
           In Progress
