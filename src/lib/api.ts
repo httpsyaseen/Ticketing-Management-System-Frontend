@@ -29,9 +29,9 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       destroyCookie(null, "token");
       // Redirect to login if on client-side
-      if (typeof window !== "undefined") {
-        window.location.href = "/login";
-      }
+      // if (typeof window !== "undefined") {
+      //   window.location.href = "/login";
+      // }
     }
     return Promise.reject(error);
   }

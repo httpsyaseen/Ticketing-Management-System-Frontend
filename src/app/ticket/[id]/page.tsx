@@ -24,11 +24,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { getStatusBadge } from "@/components/helper-components";
-import {
-  formatDateTime,
-  getTicketByIdFromSessionStorage,
-} from "@/utils/helper";
-import { useParams } from "next/navigation";
+import { formatDateTime } from "@/utils/helper";
+import { useRouter } from "next/navigation";
 import { Ticket } from "@/types/tickets";
 import Image from "next/image";
 import api from "@/lib/api";
@@ -48,54 +45,20 @@ function formatTime(seconds: number) {
     .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
 }
 
-const dummyTicket: Ticket = {
-  _id: "688df2b6f306d9ae56a99673",
-  title: "CCTV",
-  description: "Not working",
-  department: "68835242ed1804cbefb7e017",
-  priority: "Low",
-  status: "Open",
-  createdBy: {
-    _id: "688df294f306d9ae56a9966d",
-    name: "Yaseen user",
-    assignedTo: {
-      _id: "688354273098226ea918f24e",
-      name: "Mian Plaza",
-    },
-  },
-  images: [
-    "http://localhost:4000/tickets-assets/ticket-688df294f306d9ae56a9966d-1754133174412.png",
-  ],
-  createdAt: "2025-08-02T11:12:54.424Z",
-  estimatedResolutionTime: "2025-08-02T11:12:54.424Z",
-  comments: [
-    {
-      comment: "Fake Comment",
-      commentedBy: {
-        _id: "688df294f306d9ae56a9966d",
-        name: "Yaseen Nazir",
-      },
-      _id: "688df2b6f306d9ae56a99674",
-      createdAt: "2025-08-02T11:12:54.430Z",
-    },
-  ],
-  updatedAt: "2025-08-02T11:12:54.430Z",
-};
-
 export default function TicketDetailPage() {
-  const params = useParams();
-
-  const {viewTicket} = useTicket()
+  const router = useRouter();
+  const { viewTicket } = useTicket();
   const [ticket, setTicket] = React.useState<Ticket>({} as Ticket);
   const [isLoading, setIsLoading] = React.useState(true);
 
-
   React.useEffect(() => {
-    // ()
-    console.log(viewTicket)
     setTicket(viewTicket);
-    setIsLoading(false);
-  }, [viewTicket]);
+    if (!viewTicket || !viewTicket._id) {
+      router.replace("/dashboard");
+    } else {
+      setIsLoading(false);
+    }
+  }, [viewTicket, router]);
 
   const [newComment, setNewComment] = React.useState("");
   const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
