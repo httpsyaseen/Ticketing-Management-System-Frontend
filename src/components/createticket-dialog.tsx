@@ -218,7 +218,8 @@ export function CreateTicketDialog() {
           <DialogFooter className="pt-4 border-t border-gray-200 dark:border-gray-800">
             <Button
               type="submit"
-              className="w-full sm:w-auto px-6 py-3 text-lg font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+              
+              className="w-full bg-green-500 sm:w-auto px-6 py-3 text-lg font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
             >
               Create Ticket
             </Button>

@@ -24,7 +24,7 @@ type TicketContextType = {
    updateTicket: (ticket: Ticket) => void;
   addTicket: (ticket: Ticket) => void;
     getTicketById: (id: string) => Ticket | undefined;
-
+  
 };
 
 const TicketContext = createContext<TicketContextType>({} as TicketContextType);
@@ -34,7 +34,6 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
   const [assignTickets, setAssignTickets] = useState<Ticket[]>([]);
   const [myTickets, setMyTickets] = useState<Ticket[]>([]);
   const [viewTicket, setViewTicket] = useState<Ticket>({} as Ticket);
-
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
@@ -72,6 +71,7 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
   return (
     <TicketContext.Provider
       value={{
+
         departments,
         viewTicket,
         myTickets,
@@ -83,6 +83,7 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
          getTicketById,
         updateTicket,
         addTicket,
+        
       }}
     >
       {children}

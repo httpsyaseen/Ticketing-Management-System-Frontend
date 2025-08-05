@@ -18,7 +18,7 @@ import { useAuth } from "@/context/auth-context";
 import toast from "react-hot-toast";
 import axios from "axios";
 import Image from "next/image";
-
+import logo from '@/assets/logo.png'
 export default function LoginPage() {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
@@ -49,34 +49,46 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
-      <Card className="w-full max-w-md shadow-lg">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-green-100 p-4">
+      <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="text-center space-y-4">
           <div className="flex justify-center">
-            <div className="flex items-center justify-center w-16 h-16 bg-[#4DAD4B] rounded-full">
-              <Ticket className="w-8 h-8 text-white" />
-            </div>
+             <div className="flex flex-col items-center mb-6">
+            <Image
+              src={logo}
+              alt="Company Logo"
+              width={80}
+              height={80}
+              className="h-20 w-20 object-contain mb-2"
+              priority
+            />
+            <h2 className="text-2xl font-bold text-center text-[#006400]">Ticketing Management System (PSBA)</h2>
+            <p className="text-sm font-bold text-gray-500">Sign in to your complaint account</p>
           </div>
-          <div className="space-y-2">
+            {/* <div className="flex items-center justify-center w-16 h-16 bg-[#4DAD4B] rounded-full">
+              <Ticket className="w-8 h-8 text-white" />
+            </div> */}
+          </div>
+          {/* <div className="space-y-2">
             <CardTitle className="text-2xl font-bold text-gray-900">
               Ticket Management System
             </CardTitle>
-            {/* <CardDescription className="text-lg font-medium text-[#4DAD4B]">
+             <CardDescription className="text-lg font-medium text-[#4DAD4B]">
               PSBA
-            </CardDescription> */}
+            </CardDescription> 
             <CardDescription className="text-sm text-gray-600">
               Sign in to your account to continue
             </CardDescription>
-          </div>
+          </div> */}
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label
                 htmlFor="email"
-                className="text-sm font-medium text-gray-700"
+                className="text-md font-bold text-gray-700"
               >
-                Email Address
+                Email 
               </Label>
               <Input
                 id="email"
@@ -85,14 +97,14 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full"
+                className="w-full p-5"
               />
             </div>
 
             <div className="space-y-2">
               <Label
                 htmlFor="password"
-                className="text-sm font-medium text-gray-700"
+                className="text-md font-bold text-gray-700"
               >
                 Password
               </Label>
@@ -104,7 +116,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full pr-10"
+                  className="w-full pr-10 p-5 "
                 />
                 <button
                   type="button"

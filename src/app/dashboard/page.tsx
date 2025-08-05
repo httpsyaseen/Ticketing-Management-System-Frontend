@@ -114,7 +114,7 @@ export default function TicketManagementPage() {
     router.push('/ticket/56')
   }
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4">
+    <div className="flex bg-gray-50 flex-1 flex-col gap-4 p-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Ticket Management</h1>
       </div>
@@ -153,10 +153,11 @@ export default function TicketManagementPage() {
           </div> */}
 
           {/* Table */}
-          <div className="rounded-md border">
+          <div className="rounded-md border bg-white">
             <Table>
+              
               <TableHeader>
-                <TableRow>
+                <TableRow >
                   <TableHead className="pl-7">Title</TableHead>
                   <TableHead>Created By</TableHead>
                   <TableHead>Created At</TableHead>
