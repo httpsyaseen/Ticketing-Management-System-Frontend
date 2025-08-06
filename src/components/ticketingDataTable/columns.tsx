@@ -20,9 +20,7 @@ export const getTicketColumns = (
   {
     accessorKey: "createdBy",
     header: "Created By",
-    cell: ({ row }) => (
-      <span>{row.original.createdBy?.assignedTo?.name}</span>
-    ),
+    cell: ({ row }) => <span>{row.original.createdBy?.assignedTo?.name}</span>,
   },
   {
     accessorKey: "createdAt",
@@ -47,22 +45,22 @@ export const getTicketColumns = (
       <span className="text-sm">
         {row.original.estimatedResolutionTime
           ? formatDateTime(row.original.estimatedResolutionTime)
-          : "—"}
+          : "Not set yet"}
       </span>
     ),
   },
   {
     accessorKey: "assignedTo",
     header: "Assigned To",
-    cell: ({ row }) => (
-      <span>{row.original?.createdBy?.assignedTo?.name || "—"}</span>
-    ),
+    cell: ({ row }) => <span>{row.original?.department || "—"}</span>,
   },
   {
     accessorKey: "priority",
     header: "Priority",
     cell: ({ row }) => (
-      <span className="capitalize">{row.original.priority || "—"}</span>
+      <span className="capitalize">
+        {row.original.priority || "Not set yet"}
+      </span>
     ),
   },
 

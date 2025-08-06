@@ -14,31 +14,31 @@ export default function TicketManagementPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const { setAssignTickets, assignTickets, setViewTicket } = useTicket();
-console.log(user?.assignedTo?._id)
+  console.log(user?.assignedTo?._id);
   const [activeTab, setActiveTab] = useState("all");
   const [rowsPerPage, setRowsPerPage] = useState("10");
 
   useEffect(() => {
-  async function fetchTickets() {
-    try {
-      const res = await api.get(`/ticket/${user?.assignedTo?._id}`);
-      const data = res.data;
-      if (data?.data?.tickets) {
-        setAssignTickets(data?.data?.tickets);
+    async function fetchTickets() {
+      try {
+        const res = await api.get(`/ticket/${user?.assignedTo?._id}`);
+        const data = res.data;
+        if (data?.data?.tickets) {
+          setAssignTickets(data?.data?.tickets);
+        }
+      } catch (err) {
+        console.error("Failed to fetch tickets:", err);
       }
-    } catch (err) {
-      console.error("Failed to fetch tickets:", err);
     }
-  }
 
-  if (!isLoading && user?.assignedTo?._id) {
-    fetchTickets();
-  }
-}, [user?.assignedTo?._id, isLoading]);
+    if (!isLoading && user?.assignedTo?._id) {
+      fetchTickets();
+    }
+  }, [user, isLoading]);
 
-console.log("user:", user);
-console.log("API URL:", `/ticket/${user?.assignedTo?._id}`);
-console.log("assignTickets:", assignTickets);
+  console.log("user:", user);
+  console.log("API URL:", `/ticket/${user?.assignedTo?._id}`);
+  console.log("assignTickets:", assignTickets);
 
   const filteredTickets = useMemo(() => {
     let filtered = assignTickets;
@@ -65,13 +65,17 @@ console.log("assignTickets:", assignTickets);
 
   const handleViewTicket = (ticket: Ticket) => {
     setViewTicket(ticket);
-    router.push("/ticket/56");
+    router.replace("/ticket/1");
   };
 
   return (
     <div className="flex bg-gray-50 flex-1 flex-col gap-4 p-4">
       <h1 className="text-2xl font-bold">Ticket Management</h1>
-      <DashboardTabs activeTab={activeTab} setActiveTab={setActiveTab} getTabCount={getTabCount} />
+      <DashboardTabs
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        getTabCount={getTabCount}
+      />
       <DataTable
         columns={getTicketColumns(handleViewTicket)}
         data={filteredTickets}
