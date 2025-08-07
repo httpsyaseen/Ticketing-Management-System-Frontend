@@ -12,9 +12,8 @@ import { Ticket } from "@/types/tickets";
 
 export default function TicketManagementPage() {
   const { user, isLoading } = useAuth();
-  const router = useRouter();
   const { setAssignTickets, assignTickets, setViewTicket } = useTicket();
-  console.log(user?.assignedTo?._id);
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("all");
   const [rowsPerPage, setRowsPerPage] = useState("10");
 
@@ -34,35 +33,35 @@ export default function TicketManagementPage() {
     if (!isLoading && user?.assignedTo?._id) {
       fetchTickets();
     }
-  }, [user, isLoading]);
+  }, [user, isLoading, setAssignTickets]);
 
-  console.log("user:", user);
-  console.log("API URL:", `/ticket/${user?.assignedTo?._id}`);
-  console.log("assignTickets:", assignTickets);
-
+  // Filter tickets based on tab
   const filteredTickets = useMemo(() => {
-    let filtered = assignTickets;
-    if (activeTab !== "all") {
-      filtered = filtered.filter((ticket) => {
-        const status = ticket.status?.toLowerCase();
-        if (activeTab === "resolved") {
-          return status === "resolved" || status === "closed";
-        }
-        return status === activeTab;
-      });
-    }
-    return filtered;
+    if (activeTab === "all") return assignTickets;
+
+    return assignTickets.filter((ticket) => {
+      const status = ticket.status?.toLowerCase();
+      if (activeTab === "resolved") {
+        return status === "resolved" || status === "closed";
+      }
+      if (activeTab === "in-progress") {
+        return status === "in progress";
+      }
+      return status === activeTab;
+    });
   }, [assignTickets, activeTab]);
 
+  // Tab ticket counts
   const getTabCount = (status: string) => {
     if (status === "all") return assignTickets.length;
+
     return assignTickets.filter((ticket) => {
       const s = ticket.status?.toLowerCase();
       if (status === "resolved") return s === "resolved" || s === "closed";
+      if (status === "in-progress") return s === "in progress";
       return s === status;
     }).length;
   };
-
   const handleViewTicket = (ticket: Ticket) => {
     setViewTicket(ticket);
     router.replace("/ticket/1");

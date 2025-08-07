@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser({} as User);
     setIsAuthenticated(false);
     setDepartments([]);
-    router.push("/login");
+    router.replace("/login");
   }, [router]);
 
   useEffect(() => {
@@ -63,7 +63,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (token) {
         try {
           const { data } = await api.get(`/users/verify`);
-
           setUser(data.user);
           setIsAuthenticated(true);
           const res = await api.get("/department/get-all-departments");
@@ -82,7 +81,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     checkAuth();
-  }, [logout]); // Added logout to the dependency array
+  }, [logout]);
 
   const login = async (email: string, password: string) => {
     try {

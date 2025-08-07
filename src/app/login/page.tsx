@@ -27,7 +27,7 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-      router.push("/");
+      router.replace("/dashboard");
       toast.success("Logged in Successfully.");
     } catch (err) {
       let errorMessage = "Invalid Username or Password. Please try again.";
