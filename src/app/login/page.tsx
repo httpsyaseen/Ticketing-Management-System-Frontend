@@ -1,16 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { Eye, EyeOff, Ticket } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,7 +12,7 @@ import { useAuth } from "@/context/auth-context";
 import toast from "react-hot-toast";
 import axios from "axios";
 import Image from "next/image";
-import logo from '@/assets/logo.png'
+import logo from "@/assets/logo.png";
 export default function LoginPage() {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
@@ -53,33 +47,23 @@ export default function LoginPage() {
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="text-center space-y-4">
           <div className="flex justify-center">
-             <div className="flex flex-col items-center mb-6">
-            <Image
-              src={logo}
-              alt="Company Logo"
-              width={80}
-              height={80}
-              className="h-20 w-20 object-contain mb-2"
-              priority
-            />
-            <h2 className="text-2xl font-bold text-center text-[#006400]">Ticketing Management System (PSBA)</h2>
-            <p className="text-sm font-bold text-gray-500">Sign in to your complaint account</p>
+            <div className="flex flex-col items-center mb-6">
+              <Image
+                src={logo}
+                alt="Company Logo"
+                width={80}
+                height={80}
+                className="h-20 w-20 object-contain mb-2"
+                priority
+              />
+              <h2 className="text-2xl font-bold text-center text-[#006400]">
+                Ticketing Management System (PSBA)
+              </h2>
+              <p className="text-sm font-bold text-gray-500">
+                Sign in to your complaint account
+              </p>
+            </div>
           </div>
-            {/* <div className="flex items-center justify-center w-16 h-16 bg-[#4DAD4B] rounded-full">
-              <Ticket className="w-8 h-8 text-white" />
-            </div> */}
-          </div>
-          {/* <div className="space-y-2">
-            <CardTitle className="text-2xl font-bold text-gray-900">
-              Ticket Management System
-            </CardTitle>
-             <CardDescription className="text-lg font-medium text-[#4DAD4B]">
-              PSBA
-            </CardDescription> 
-            <CardDescription className="text-sm text-gray-600">
-              Sign in to your account to continue
-            </CardDescription>
-          </div> */}
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -88,7 +72,7 @@ export default function LoginPage() {
                 htmlFor="email"
                 className="text-md font-bold text-gray-700"
               >
-                Email 
+                Email
               </Label>
               <Input
                 id="email"
