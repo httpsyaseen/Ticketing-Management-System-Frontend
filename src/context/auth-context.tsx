@@ -24,11 +24,6 @@ type User = {
   };
 };
 
-type Department = {
-  _id: string;
-  name: string;
-};
-
 type AuthContextType = {
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -36,7 +31,6 @@ type AuthContextType = {
   login: (email: string, password: string) => Promise<void>;
   signup: (formData: FormData) => Promise<void>;
   logout: () => void;
-  departments: Department[];
 };
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -46,13 +40,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User>({} as User);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [departments, setDepartments] = useState<Department[]>([]);
 
   const logout = useCallback(() => {
     destroyCookie(null, "token");
     setUser({} as User);
     setIsAuthenticated(false);
-    setDepartments([]);
     router.replace("/login");
   }, [router]);
 
@@ -65,8 +57,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           const { data } = await api.get(`/users/verify`);
           setUser(data.user);
           setIsAuthenticated(true);
-          const res = await api.get("/department/get-all-departments");
-          setDepartments(res.data.data.departments);
         } catch (error) {
           if (axios.isAxiosError(error)) {
             toast.error(error?.response?.data?.message);
@@ -97,8 +87,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         maxAge: 7 * 24 * 60 * 60,
         path: "/",
       });
-      const res = await api.get("/department/get-all-departments");
-      setDepartments(res.data.data.departments);
+
       setUser(data.data.user);
       setIsAuthenticated(true);
     } catch (error) {
@@ -129,7 +118,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         isLoading,
         signup,
         logout,
-        departments,
       }}
     >
       {children}

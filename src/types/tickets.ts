@@ -8,9 +8,12 @@ export type Ticket = {
   _id: string;
   title: string;
   description: string;
-  department: string | Department;
-  priority: "Low" | "Medium" | "High"; // adjust if other levels are possible
-  status: "Open" | "In Progress" | "Resolved" | "Closed"; // adjust if needed
+  assignedTo: {
+    _id: string;
+    name: string;
+  };
+  priority: "Low" | "Medium" | "High";
+  status: "open" | "in-progress" | "resolved" | "closed";
   createdBy: {
     _id: string;
     name: string;

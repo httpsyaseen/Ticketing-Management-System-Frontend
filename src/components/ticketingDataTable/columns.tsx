@@ -52,7 +52,13 @@ export const getTicketColumns = (
   {
     accessorKey: "assignedTo",
     header: "Assigned To",
-    cell: ({ row }) => <span>{row.original?.department || "—"}</span>,
+    cell: ({ row }) => {
+      const assignedTo = row.original.assignedTo;
+      if (typeof assignedTo === "string") {
+        return assignedTo;
+      }
+      return assignedTo?.name || "";
+    },
   },
   {
     accessorKey: "priority",

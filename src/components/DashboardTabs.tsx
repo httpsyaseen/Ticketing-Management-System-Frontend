@@ -4,15 +4,23 @@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CreateTicketDialog } from "@/components/createticket-dialog";
 
-export default function DashboardTabs({ activeTab, setActiveTab, getTabCount }: any) {
+export default function DashboardTabs({
+  activeTab,
+  setActiveTab,
+  getTabCount,
+}: any) {
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="mx-12">
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="mx-10">
       <div className="py-3.5 flex justify-between">
         <TabsList className="grid w-[40%] grid-cols-4">
           <TabsTrigger value="all">All ({getTabCount("all")})</TabsTrigger>
           <TabsTrigger value="open">Open ({getTabCount("open")})</TabsTrigger>
-          <TabsTrigger value="in-progress">In Progress ({getTabCount("in-progress")})</TabsTrigger>
-          <TabsTrigger value="resolved">Resolved ({getTabCount("resolved")})</TabsTrigger>
+          <TabsTrigger value="in-progress">
+            In Progress ({getTabCount("in-progress")})
+          </TabsTrigger>
+          <TabsTrigger value="resolved">
+            Resolved ({getTabCount("resolved")})
+          </TabsTrigger>
         </TabsList>
         <CreateTicketDialog />
       </div>

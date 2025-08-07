@@ -14,6 +14,7 @@ import { Ticket, Department } from "@/types/tickets";
 
 type TicketContextType = {
   departments: Department[];
+  markets: Market[];
   viewTicket: Ticket;
   myTickets: Ticket[];
   assignTickets: Ticket[];
@@ -21,10 +22,14 @@ type TicketContextType = {
   setViewTicket: React.Dispatch<React.SetStateAction<Ticket>>;
   setMyTickets: React.Dispatch<React.SetStateAction<Ticket[]>>;
   setAssignTickets: React.Dispatch<React.SetStateAction<Ticket[]>>;
-   updateTicket: (ticket: Ticket) => void;
+  updateTicket: (ticket: Ticket) => void;
   addTicket: (ticket: Ticket) => void;
-    getTicketById: (id: string) => Ticket | undefined;
-  
+  getTicketById: (id: string) => Ticket | undefined;
+};
+
+type Market = {
+  _id: string;
+  name: string;
 };
 
 const TicketContext = createContext<TicketContextType>({} as TicketContextType);
@@ -34,11 +39,14 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
   const [assignTickets, setAssignTickets] = useState<Ticket[]>([]);
   const [myTickets, setMyTickets] = useState<Ticket[]>([]);
   const [viewTicket, setViewTicket] = useState<Ticket>({} as Ticket);
+  const [markets, setMarkets] = useState<Market[]>([]);
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
         const res = await api.get("/department/get-all-departments");
+        const marketsRes = await api.get("/market/get-all-markets");
         setDepartments(res.data.data.departments);
+        setMarkets(marketsRes.data.data.markets);
       } catch (error) {
         if (axios.isAxiosError(error)) {
           toast.error(
@@ -71,7 +79,6 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
   return (
     <TicketContext.Provider
       value={{
-
         departments,
         viewTicket,
         myTickets,
@@ -80,10 +87,10 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
         setViewTicket,
         setMyTickets,
         setAssignTickets,
-         getTicketById,
+        getTicketById,
         updateTicket,
         addTicket,
-        
+        markets,
       }}
     >
       {children}
@@ -92,5 +99,3 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
 };
 
 export const useTicket = () => useContext(TicketContext);
-
-

@@ -14,13 +14,12 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { useAuth } from "@/context/auth-context";
 import Image from "next/image";
-import logo from '@/assets/logo.png'
-import { Separator } from "@radix-ui/react-separator";
+import { usePathname } from "next/navigation";
+
 // Navigation items
 const navItems = [
   {
@@ -53,6 +52,7 @@ const navItems = [
 
 export default function AppSidebar() {
   const { isAuthenticated } = useAuth();
+  const pathname = usePathname();
 
   if (!isAuthenticated) {
     return <></>;
@@ -64,16 +64,18 @@ export default function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem className="flex">
             <SidebarMenuButton size="lg" asChild>
-              <Link href="/"  className="font-semibold">
+              <Link href="/" className="font-semibold">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg  text-sidebar-primary-foreground">
                   <Image
-                    src={"https://psba.gop.pk/wp-content/uploads/2025/03/cropped-SAHULAT-BAZAAR-LOGO.png"}
+                    src={
+                      "https://psba.gop.pk/wp-content/uploads/2025/03/cropped-SAHULAT-BAZAAR-LOGO.png"
+                    }
                     alt="Company Logo"
                     width={40}
                     height={40}
                     className=" mt-5 object-contain mb-4"
                     priority
-                  />            
+                  />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
                   <span className="font-semibold">PSBA Ticketing</span>
@@ -81,24 +83,25 @@ export default function AppSidebar() {
                 </div>
               </Link>
             </SidebarMenuButton>
-          
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup >
-          <SidebarGroupLabel className="mt-4 font-bold text-md">Navigation</SidebarGroupLabel>
+        <SidebarGroup>
+          <SidebarGroupLabel className="mt-4 font-bold text-md">
+            Navigation
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="mt-5">
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild
-                    isActive={window?.location?.href.includes(item.url)}
+                    isActive={pathname === item.url}
                     className="[&>svg]:size-5  gap-4 min-h-8"
                   >
                     <Link href={item.url}>
-                      <item.icon   />
+                      <item.icon />
                       <span className="text-base">{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -112,4 +115,3 @@ export default function AppSidebar() {
     </Sidebar>
   );
 }
-

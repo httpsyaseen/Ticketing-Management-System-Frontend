@@ -1,5 +1,4 @@
 "use client";
-
 import type React from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -23,25 +22,29 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "react-hot-toast";
-import { TicketIcon, ImagePlusIcon, XIcon } from "lucide-react"; // Added icons
+import { TicketIcon, ImagePlusIcon, XIcon } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import api from "@/lib/api";
-import { addTicketToSessionStorage } from "@/utils/helper";
 import { useTicket } from "@/context/ticket-context";
+import { SearchableSelect } from "./ui/searchable-select";
 
 export function CreateTicketDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [images, setImages] = useState<File[]>([]);
-  const [department, setDepartment] = useState("");
-  const {user } = useAuth();
-  const {departments,addTicket} = useTicket()
-  console.log(departments)
+  const [assignedToType, setAssignedToType] = useState<
+    "Department" | "Market" | ""
+  >("");
+  const [assignedTo, setAssignedTo] = useState<string>("");
+
+  const { user } = useAuth();
+  const { departments, addTicket, markets } = useTicket();
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files) {
-      const newFiles = Array.from(files).slice(0, 2 - images.length); // Allow adding up to max 2 files
+      const newFiles = Array.from(files).slice(0, 2 - images.length);
       setImages((prevImages) => [...prevImages, ...newFiles]);
     }
   };
@@ -52,17 +55,21 @@ export function CreateTicketDialog() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!title || !description || !department) {
+    if (!title || !description || !assignedToType || !assignedTo) {
+      toast.error("Please fill in all required fields.");
       return;
     }
     try {
       const formData = new FormData();
       formData.append("title", title);
       formData.append("description", description);
-      formData.append("department", department);
+      formData.append("assignedToType", assignedToType);
+      formData.append("assignedTo", assignedTo);
       images.forEach((image) => {
         formData.append("images", image);
       });
+
+      console.log(formData);
 
       const { data } = await api.post(`/ticket/create-ticket`, formData, {
         headers: {
@@ -77,11 +84,26 @@ export function CreateTicketDialog() {
     } finally {
       setTitle("");
       setDescription("");
-      setDepartment("");
+      setAssignedToType("");
+      setAssignedTo("");
       setImages([]);
       setIsOpen(false);
     }
   };
+
+  // Determine which list to display in the dynamic dropdown
+  const assignedToList =
+    assignedToType === "Department"
+      ? departments
+      : assignedToType === "Market"
+      ? markets
+      : [];
+  const assignedToLabel =
+    assignedToType === "Department"
+      ? "Department"
+      : assignedToType === "Market"
+      ? "Market"
+      : "Select Type First";
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -96,56 +118,77 @@ export function CreateTicketDialog() {
             <TicketIcon className="h-8 w-8 text-primary" /> Create Ticket
           </DialogTitle>
           <DialogDescription className="text-md text-gray-600 dark:text-gray-400 mt-2">
-            Fill in the details below to create a new support ticket. We're here
-            to help!
+            Fill in the details below to create a new support ticket. We&#39;re
+            here to help!
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="grid gap-4 py-6">
-          {/* Horizontal fields: Title and Department */}
+          {/* Horizontal fields: Title and Type */}
+          <div className="grid gap-2">
+            <Label
+              htmlFor="title"
+              className="text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Title
+            </Label>
+            <Input
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Brief summary of your issue"
+              className="w-full px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
+              required
+            />
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* New Type dropdown */}
             <div className="grid gap-2">
               <Label
-                htmlFor="title"
+                htmlFor="assignedToType"
                 className="text-sm font-medium text-gray-700 dark:text-gray-300"
               >
-                Title
+                Assign To Type
               </Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Brief summary of your issue"
-                className="w-full px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
+              <Select
+                onValueChange={(value: "Department" | "Market") => {
+                  setAssignedToType(value);
+                  setAssignedTo(""); // Reset assignedTo when type changes
+                }}
+                value={assignedToType}
                 required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label
-                htmlFor="department"
-                className="text-sm font-medium text-gray-700 dark:text-gray-300"
               >
-                Department
-              </Label>
-              <Select onValueChange={setDepartment} value={department} required>
                 <SelectTrigger
-                  id="department"
+                  id="assignedToType"
                   className="w-full px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
                 >
-                  <SelectValue placeholder="Select a department" />
+                  <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent className="rounded-md border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 shadow-lg">
-                  {departments.map((dept) => {
-                    if (dept._id === user?.assignedTo?._id) return null;
-                    return (
-                      <SelectItem key={dept._id} value={dept._id}>
-                        {dept.name}
-                      </SelectItem>
-                    );
-                  })}
+                  <SelectItem value="Department">Department</SelectItem>
+                  <SelectItem value="Market">Market</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+            <div className="grid gap-2">
+              <Label
+                htmlFor="assignedTo"
+                className="text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
+                {assignedToLabel}
+              </Label>
+              <SearchableSelect
+                items={assignedToList.filter(
+                  (item) => user?.assignedTo?._id !== item._id
+                )}
+                value={assignedTo}
+                onValueChange={setAssignedTo}
+                placeholder={`Select a ${assignedToType || "type"}...`}
+                disabled={!assignedToType}
+              />
+            </div>
           </div>
+
+          {/* Dynamic Assigned To dropdown with search */}
 
           <div className="grid gap-2">
             <Label
@@ -218,7 +261,6 @@ export function CreateTicketDialog() {
           <DialogFooter className="pt-4 border-t border-gray-200 dark:border-gray-800">
             <Button
               type="submit"
-              
               className="w-full bg-green-500 sm:w-auto px-6 py-3 text-lg font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
             >
               Create Ticket

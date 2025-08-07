@@ -37,7 +37,6 @@ export default function TicketManagementPage() {
     }
   }, [user, isLoading, setAssignTickets]);
 
-  // Filter tickets based on tab
   const filteredTickets = useMemo(() => {
     if (activeTab === "all") return assignTickets;
 
@@ -47,7 +46,7 @@ export default function TicketManagementPage() {
         return status === "resolved" || status === "closed";
       }
       if (activeTab === "in-progress") {
-        return status === "in progress";
+        return status === "in-progress"; // <-- fix here
       }
       return status === activeTab;
     });
@@ -60,7 +59,7 @@ export default function TicketManagementPage() {
     return assignTickets.filter((ticket) => {
       const s = ticket.status?.toLowerCase();
       if (status === "resolved") return s === "resolved" || s === "closed";
-      if (status === "in-progress") return s === "in progress";
+      if (status === "in-progress") return s === "in-progress"; // <-- fix here
       return s === status;
     }).length;
   };
@@ -68,12 +67,12 @@ export default function TicketManagementPage() {
   // Handle view
   const handleViewTicket = (ticket: Ticket) => {
     setViewTicket(ticket);
-    router.push(`/user-tickets/${ticket._id}`);
+    router.replace(`/user-tickets/${ticket._id}`);
   };
 
   return (
     <div className="flex bg-gray-50 flex-1 flex-col gap-4 p-4">
-      <h1 className="text-2xl font-bold">Ticket Management</h1>
+      <h1 className="text-2xl font-extrabold">{user?.assignedTo?.name}</h1>
       <DashboardTabs
         activeTab={activeTab}
         setActiveTab={setActiveTab}

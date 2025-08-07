@@ -124,7 +124,7 @@ export default function TicketDetailPage() {
     <div className="flex flex-1 flex-col gap-4 p-4 mx-12">
       {/* Top Actions */}
       <div className="flex items-center justify-between">
-        {ticket.status !== "Resolved" && (
+        {ticket.status !== "resolved" && (
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -138,7 +138,7 @@ export default function TicketDetailPage() {
           </div>
         )}
         <div className="flex items-center gap-2">
-          {ticket?.status === "Open" && (
+          {ticket?.status === "open" && (
             <Button
               onClick={handleStartProgress}
               className="bg-black hover:bg-black text-white cursor-pointer"
@@ -147,7 +147,7 @@ export default function TicketDetailPage() {
               Accept Ticket
             </Button>
           )}
-          {ticket?.status === "In Progress" && (
+          {ticket?.status === "in-progress" && (
             <Button
               onClick={() => setShowResolveDialog(true)}
               className="bg-green-600 hover:bg-green-700"
@@ -292,7 +292,7 @@ export default function TicketDetailPage() {
 
               <Separator />
 
-              {ticket.status === "Open" ? (
+              {ticket.status === "open" ? (
                 <div className="space-y-2">
                   <div>Accept the Ticket to add Comments</div>
                 </div>
