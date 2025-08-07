@@ -46,7 +46,7 @@ export default function TicketManagementPage() {
         return status === "resolved" || status === "closed";
       }
       if (activeTab === "in-progress") {
-        return status === "in-progress"; // <-- fix here
+        return status === "in-progress";
       }
       return status === activeTab;
     });
@@ -72,7 +72,9 @@ export default function TicketManagementPage() {
 
   return (
     <div className="flex bg-gray-50 flex-1 flex-col gap-4 p-4">
-      <h1 className="text-2xl font-extrabold">{user?.assignedTo?.name}</h1>
+      <h1 className="text-3xl  mx-10  font-extrabold">
+        {user?.assignedTo?.name}
+      </h1>
       <DashboardTabs
         activeTab={activeTab}
         setActiveTab={setActiveTab}

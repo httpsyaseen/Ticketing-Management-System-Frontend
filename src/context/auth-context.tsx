@@ -22,6 +22,7 @@ type User = {
     _id: string;
     name: string;
   };
+  assignedToType: "Market" | "Department";
 };
 
 type AuthContextType = {

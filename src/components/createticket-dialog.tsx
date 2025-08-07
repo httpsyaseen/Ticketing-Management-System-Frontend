@@ -27,6 +27,7 @@ import { useAuth } from "@/context/auth-context";
 import api from "@/lib/api";
 import { useTicket } from "@/context/ticket-context";
 import { SearchableSelect } from "./ui/searchable-select";
+import { useEffect } from "react";
 
 export function CreateTicketDialog() {
   const [isOpen, setIsOpen] = useState(false);
@@ -35,11 +36,18 @@ export function CreateTicketDialog() {
   const [images, setImages] = useState<File[]>([]);
   const [assignedToType, setAssignedToType] = useState<
     "Department" | "Market" | ""
-  >("");
+  >("Department");
   const [assignedTo, setAssignedTo] = useState<string>("");
 
   const { user } = useAuth();
   const { departments, addTicket, markets } = useTicket();
+
+  useEffect(() => {
+    if (user?.assignedToType === "Market") {
+      setAssignedToType("Department");
+      setAssignedTo("");
+    }
+  }, [user?.assignedToType]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -152,10 +160,11 @@ export function CreateTicketDialog() {
               <Select
                 onValueChange={(value: "Department" | "Market") => {
                   setAssignedToType(value);
-                  setAssignedTo(""); // Reset assignedTo when type changes
+                  setAssignedTo("");
                 }}
                 value={assignedToType}
                 required
+                disabled={user?.assignedToType === "Market"} // <-- disable for Market users
               >
                 <SelectTrigger
                   id="assignedToType"
@@ -169,6 +178,7 @@ export function CreateTicketDialog() {
                 </SelectContent>
               </Select>
             </div>
+            {/* Assigned To dropdown (searchable) */}
             <div className="grid gap-2">
               <Label
                 htmlFor="assignedTo"
@@ -177,9 +187,7 @@ export function CreateTicketDialog() {
                 {assignedToLabel}
               </Label>
               <SearchableSelect
-                items={assignedToList.filter(
-                  (item) => user?.assignedTo?._id !== item._id
-                )}
+                items={assignedToList}
                 value={assignedTo}
                 onValueChange={setAssignedTo}
                 placeholder={`Select a ${assignedToType || "type"}...`}

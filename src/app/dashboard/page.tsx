@@ -70,7 +70,7 @@ export default function TicketManagementPage() {
 
   return (
     <div className="flex bg-gray-50 flex-1 flex-col gap-4 p-4">
-      <h1 className="text-2xl  mx-10 uppercase font-extrabold">
+      <h1 className="text-3xl  mx-10  font-extrabold">
         {user?.assignedTo?.name}
       </h1>
       <DashboardTabs
