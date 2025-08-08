@@ -4,6 +4,7 @@ export type Department = {
 };
 
 export type Ticket = {
+  department: Department;
   images: string[];
   _id: string;
   title: string;
@@ -24,6 +25,7 @@ export type Ticket = {
   };
   createdAt: string;
   updatedAt: string;
+  inProgressAt:string
   estimatedResolutionTime?: string;
   resolvedAt?: string;
   closedAt?: string;

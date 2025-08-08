@@ -48,9 +48,8 @@ function formatTime(seconds: number) {
 export default function TicketDetailPage() {
   const router = useRouter();
   const { viewTicket } = useTicket();
-  const [ticket, setTicket] = React.useState<Ticket>({} as Ticket);
+  const {ticket, setTicket} = useTicket()
   const [isLoading, setIsLoading] = React.useState(true);
-
   React.useEffect(() => {
     setTicket(viewTicket);
     if (!viewTicket || !viewTicket._id) {
@@ -59,7 +58,7 @@ export default function TicketDetailPage() {
       setIsLoading(false);
     }
   }, [viewTicket, router]);
-
+console.log(viewTicket)
   const [newComment, setNewComment] = React.useState("");
   const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
   const [showResolveDialog, setShowResolveDialog] = React.useState(false);
@@ -266,7 +265,7 @@ export default function TicketDetailPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-4 max-h-96 overflow-y-auto">
-                {ticket.comments.map((comment) => (
+                {ticket.comments.map((comment:any) => (
                   <div key={comment._id} className="flex gap-3">
                     <Avatar className="h-8 w-8">
                       <AvatarFallback>

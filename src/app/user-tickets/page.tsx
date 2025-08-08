@@ -67,7 +67,7 @@ export default function TicketManagementPage() {
   // Handle view
   const handleViewTicket = (ticket: Ticket) => {
     setViewTicket(ticket);
-    router.replace(`/user-tickets/${ticket._id}`);
+    router.replace(`/ticketdetails/${ticket._id}`);
   };
 
   return (

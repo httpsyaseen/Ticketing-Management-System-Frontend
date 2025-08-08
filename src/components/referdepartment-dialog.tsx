@@ -26,6 +26,7 @@ import api from "@/lib/api";
 import { useAuth } from "@/context/auth-context";
 import toast from "react-hot-toast";
 import { updateTicketInSessionStorage } from "@/utils/helper";
+import { useTicket } from "@/context/ticket-context";
 
 type ReferTicketDialogProps = {
   showReferDialog: boolean;
@@ -42,8 +43,10 @@ export default function ReferTicketDialog({
 }: ReferTicketDialogProps) {
   const [referReason, setReferReason] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("");
-  const { departments, user } = useAuth();
-
+  const {user } = useAuth();
+  const {departments} = useTicket()
+  console.log(departments)
+  console.log(user)
   const handleReferTicket = async () => {
     if (!referReason.trim() || !selectedDepartment) return;
     try {
@@ -100,11 +103,11 @@ export default function ReferTicketDialog({
                 <SelectValue placeholder="Select department" />
               </SelectTrigger>
               <SelectContent>
-                {departments.map((dept) => {
+                {departments?.map((dept) => {
                   if (dept._id === user?.assignedTo?._id) return null;
                   return (
-                    <SelectItem key={dept._id} value={dept._id}>
-                      {dept.name}
+                    <SelectItem key={dept?._id} value={dept?._id}>
+                      {dept?.name}
                     </SelectItem>
                   );
                 })}
