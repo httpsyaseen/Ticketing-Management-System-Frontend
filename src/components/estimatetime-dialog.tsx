@@ -48,17 +48,17 @@ export function EstimateTimeDialog({
   const [minute, setMinute] = useState<string>("");
 
   const isFutureDate = date && hour !== "" && minute !== "";
-
+   console.log(ticketId)
   const handleSet = async () => {
     if (!date) return;
     const fullDate = new Date(date);
     fullDate.setHours(Number(hour), Number(minute), 0, 0);
     if (fullDate > new Date()) {
       try {
-        const { data } = await api.patch(`ticket/set-time/${ticketId}`, {
+        const { data } = await api.patch(`/ticket/set-time/${ticketId}`, {
           estimatedResolutionTime: fullDate.toISOString(),
         });
-
+        console.log(data)
         toast.success("Estimated resolution time set successfully.");
         updateTicketInSessionStorage(data.data.ticket);
         setTicket(data.data.ticket);

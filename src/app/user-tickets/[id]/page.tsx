@@ -28,6 +28,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { ImageViewerDialog } from "@/components/image-viewer-dialog"; // Import the new component
 import { Department, Ticket } from "@/types/tickets";
 import { formatDateTime, getViewTicket } from "@/utils/helper";
+import { useTicket } from "@/context/ticket-context";
+import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 
 // Define types based on the provided dummy data
 // type User = {
@@ -140,11 +142,11 @@ const getPriorityVariant = (priority: Ticket["priority"]) => {
 // Helper to get badge variant based on status
 const getStatusVariant = (status: Ticket["status"]) => {
   switch (status) {
-    case "Open":
+    case "open":
       return "default"; // Primary green
-    case "In Progress":
+    case "in-progress":
       return "outline"; // Outline for in progress
-    case "Closed":
+    case "closed":
       return "secondary"; // Secondary for closed
     default:
       return "default";
@@ -159,9 +161,9 @@ export default function TicketDetailPage() {
   const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
   const [ticket, setTicket] = React.useState<Ticket>({} as Ticket);
   const [isLoading, setIsLoading] = React.useState(true);
-
+  const {viewTicket} = useTicket()
   React.useEffect(() => {
-    const ticket = getViewTicket();
+    const ticket = viewTicket
     console.log(ticket);
     setTicket(ticket || ({} as Ticket));
     setIsLoading(false);
@@ -187,7 +189,7 @@ export default function TicketDetailPage() {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 md:px-6 lg:px-8 max-w-6xl">
+    <div className="container    mx-auto py-8 px-4 md:px-6 lg:px-8 max-w-6xl">
       <div className="grid md:grid-cols-3 gap-8">
         {/* Main Ticket Details Card */}
         <Card className="md:col-span-2">
@@ -232,14 +234,14 @@ export default function TicketDetailPage() {
                   Department
                 </p>
                 <p className="text-base">
-                  {(ticket.department as Department).name}
+                  {(ticket?.createdBy?.assignedTo?.name)}
                 </p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">
                   Created By
                 </p>
-                <p className="text-base">{ticket.createdBy.assignedTo.name}</p>
+                <p className="text-base">{ticket?.createdBy?.assignedTo?.name}</p>
               </div>
 
               <div>
@@ -247,7 +249,7 @@ export default function TicketDetailPage() {
                   Created At
                 </p>
                 <p className="text-base">
-                  {format(new Date(ticket.createdAt), "PPP p")}
+                  {format(new Date(ticket?.createdAt), "PPP p")}
                 </p>
               </div>
               <div>
@@ -294,7 +296,7 @@ export default function TicketDetailPage() {
             )}
           </CardContent>
           <CardFooter className="flex justify-end">
-            {ticket.status !== "Closed" && (
+            {ticket.status !== "closed" && (
               <Dialog
                 open={isCloseTicketDialogOpen}
                 onOpenChange={setIsCloseTicketDialogOpen}
@@ -344,39 +346,27 @@ export default function TicketDetailPage() {
             <CardTitle>Comments</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {ticket.comments.length > 0 ? (
-              ticket.comments.map((comment) => (
-                <div
-                  key={comment._id}
-                  className="border rounded-lg p-4 bg-background shadow-sm hover:shadow-md transition-shadow"
-                >
-                  <div className="flex items-start gap-3">
-                    {/* Avatar fallback or initials */}
-                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center font-bold text-primary uppercase">
-                      {comment.commentedBy.name.charAt(0)}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex justify-between items-center">
-                        <span className="font-semibold text-foreground">
-                          {comment.commentedBy.name}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {format(
-                            new Date(comment.createdAt),
-                            "MMM dd, yyyy • HH:mm"
-                          )}
-                        </span>
+             <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 -mr-2 mb-4">
+                {ticket?.comments?.length === 0 && (
+                  <p className="text-[#525252] text-center py-4">No newComment yet. Be the first to add one!</p>
+                )}
+                {ticket?.comments?.map((comment) => (
+                  <div key={comment?._id} className="flex items-start gap-3 p-3 bg-[#F0F0F0] rounded-lg border border-[#E0E0E0]">
+                    <Avatar className="w-9 h-9 border border-[#E0E0E0] flex-shrink-0">
+                      <AvatarImage src={comment?.commentedBy?.name || "/placeholder.svg"} alt={comment?.commentedBy?.name} />
+                      <AvatarFallback>{comment?.commentedBy?.name.split(" ").map((n) => n[0]).join("")}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 grid gap-1">
+                      <div className="flex items-center justify-between">
+                        <div className="font-semibold text-[#262626] text-sm">{comment?.commentedBy?.name}</div>
+                        <div className="text-xs text-[#525252]">{formatTime(new Date(comment?.createdAt).getTime())}
+</div>
                       </div>
-                      <p className="text-sm mt-2 leading-relaxed text-muted-foreground">
-                        {comment.comment}
-                      </p>
+                      <p className="text-sm text-[#404040] leading-snug">{comment?.comment}</p>
                     </div>
                   </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-muted-foreground text-sm">No comments yet.</p>
-            )}
+                ))}
+              </div>
           </CardContent>
         </Card>
       </div>

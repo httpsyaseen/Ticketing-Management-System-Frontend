@@ -19,15 +19,15 @@ const badgeVariants = cva(
           "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
       },
     },
-    defaultVariants: {
-      variant: "default",
-    },
+    // defaultVariants: {
+    //   variant: "default",
+    // },
   }
 )
 
 function Badge({
   className,
-  variant,
+  // variant,
   asChild = false,
   ...props
 }: React.ComponentProps<"span"> &
@@ -37,7 +37,7 @@ function Badge({
   return (
     <Comp
       data-slot="badge"
-      className={cn(badgeVariants({ variant }), className)}
+      className={cn( className)}
       {...props}
     />
   )

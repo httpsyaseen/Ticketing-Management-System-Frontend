@@ -45,8 +45,8 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
       try {
         const res = await api.get("/department/get-all-departments");
         const marketsRes = await api.get("/market/get-all-markets");
-        setDepartments(res.data.data.departments);
-        setMarkets(marketsRes.data.data.markets);
+        setDepartments(res?.data?.data?.departments);
+        setMarkets(marketsRes?.data?.data?.markets);
       } catch (error) {
         if (axios.isAxiosError(error)) {
           toast.error(
