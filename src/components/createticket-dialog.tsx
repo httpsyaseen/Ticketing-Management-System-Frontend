@@ -144,7 +144,7 @@ export function CreateTicketDialog() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Brief summary of your issue"
-              className="w-full px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
+              className="w-full px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50  transition-colors"
               required
             />
           </div>
@@ -164,7 +164,7 @@ export function CreateTicketDialog() {
                 }}
                 value={assignedToType}
                 required
-                disabled={user?.assignedToType === "Market"} // <-- disable for Market users
+                disabled={user?.assignedToType === "Market"}
               >
                 <SelectTrigger
                   id="assignedToType"

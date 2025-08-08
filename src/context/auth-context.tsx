@@ -44,10 +44,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   const logout = useCallback(() => {
+    router.replace("/login");
     destroyCookie(null, "token");
     setUser({} as User);
     setIsAuthenticated(false);
-    router.replace("/login");
   }, [router]);
 
   useEffect(() => {
@@ -90,8 +90,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         path: "/",
       });
 
-      setUser(data.data.user);
+      router.replace("/dashboard");
       setIsAuthenticated(true);
+      setUser(data.data.user);
     } catch (error) {
       throw error;
     }

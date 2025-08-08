@@ -27,6 +27,7 @@ export default function TicketManagementPage() {
         }
       } catch (err) {
         console.error("Failed to fetch tickets:", err);
+      } finally {
       }
     }
 
