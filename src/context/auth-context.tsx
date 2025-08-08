@@ -23,6 +23,7 @@ type User = {
     name: string;
   };
   assignedToType: "Market" | "Department";
+  role: "admin" | "user" | "superadmin";
 };
 
 type AuthContextType = {

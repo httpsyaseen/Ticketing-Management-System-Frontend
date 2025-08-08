@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
 import { useTicket } from "@/context/ticket-context";
-import api from "@/lib/api";
-import { useRouter } from "next/navigation";
 import DashboardTabs from "@/components/DashboardTabs";
 import { DataTable } from "@/components/ticketingDataTable/DataTable";
 import { getTicketColumns } from "@/components/ticketingDataTable/columns";
+import api from "@/lib/api";
 import { Ticket } from "@/types/tickets";
 
 export default function TicketManagementPage() {

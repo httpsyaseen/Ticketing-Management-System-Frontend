@@ -1,6 +1,5 @@
 // Combobox.tsx (or inside your createticket-dialog.tsx file)
 import * as React from "react";
-import { Input } from "@/components/ui/input";
 import {
   Command,
   CommandInput,
