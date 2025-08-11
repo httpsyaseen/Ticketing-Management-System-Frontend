@@ -19,6 +19,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useAuth } from "@/context/auth-context";
 
 interface SearchableSelectItem {
   _id: string;
@@ -42,6 +43,7 @@ export function SearchableSelect({
 }: SearchableSelectProps) {
   const [open, setOpen] = React.useState(false);
   const selectedItem = items.find((item) => item._id === value);
+  const { user } = useAuth();
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -64,24 +66,27 @@ export function SearchableSelect({
           <CommandList>
             <ScrollArea className="h-48">
               <CommandGroup>
-                {items.map((item) => (
-                  <CommandItem
-                    key={item._id}
-                    value={item.name} // Use name for search matching
-                    onSelect={() => {
-                      onValueChange(item._id);
-                      setOpen(false);
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        value === item._id ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    {item.name}
-                  </CommandItem>
-                ))}
+                {items.map((item) => {
+                  if (item._id === user?.assignedTo?._id) return null;
+                  return (
+                    <CommandItem
+                      key={item._id}
+                      value={item.name} // Use name for search matching
+                      onSelect={() => {
+                        onValueChange(item._id);
+                        setOpen(false);
+                      }}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          value === item._id ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      {item.name}
+                    </CommandItem>
+                  );
+                })}
               </CommandGroup>
             </ScrollArea>
           </CommandList>
