@@ -46,25 +46,31 @@ export function EstimateTimeDialog({
   const [date, setDate] = useState<Date | null>(null);
   const [hour, setHour] = useState<string>("");
   const [minute, setMinute] = useState<string>("");
+  const [priority, setPriority] = useState<string>("");
 
   const isFutureDate = date && hour !== "" && minute !== "";
-   console.log(ticketId)
+
   const handleSet = async () => {
     if (!date) return;
+
     const fullDate = new Date(date);
     fullDate.setHours(Number(hour), Number(minute), 0, 0);
+
     if (fullDate > new Date()) {
+      const payload = {
+        estimatedResolutionTime: fullDate.toISOString(),
+        priority: priority || "medium",
+      };
+
       try {
-        const { data } = await api.patch(`/ticket/set-time/${ticketId}`, {
-          estimatedResolutionTime: fullDate.toISOString(),
-        });
-        console.log(data)
+        console.log("🔼 Sending to API:", payload); 
+        const { data } = await api.patch(`/ticket/set-time/${ticketId}`, payload);
         toast.success("Estimated resolution time set successfully.");
         updateTicketInSessionStorage(data.data.ticket);
         setTicket(data.data.ticket);
       } catch (error) {
         toast.error("Failed to set estimated resolution time.");
-        console.error("Error setting estimated resolution time:", error);
+        console.error("❌ Error setting estimated resolution time:", error);
       }
 
       onOpenChange(false);
@@ -82,6 +88,7 @@ export function EstimateTimeDialog({
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* Date Picker */}
           <div>
             <Label className="py-2">Pick a Date</Label>
             <Popover>
@@ -105,6 +112,7 @@ export function EstimateTimeDialog({
             </Popover>
           </div>
 
+          {/* Hour & Minute Select */}
           <div className="flex gap-4">
             <div className="w-1/2">
               <Label className="py-2">Hour</Label>
@@ -136,6 +144,21 @@ export function EstimateTimeDialog({
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          {/* Priority Select */}
+          <div>
+            <Label className="py-2">Priority</Label>
+            <Select onValueChange={setPriority}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select priority" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 

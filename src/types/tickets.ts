@@ -4,6 +4,7 @@ export type Department = {
 };
 
 export type Ticket = {
+  find: any;
   department: Department;
   images: string[];
   _id: string;
