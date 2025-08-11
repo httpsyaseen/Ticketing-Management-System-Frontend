@@ -17,6 +17,9 @@ import { EstimateTimeDialog } from "@/components/estimatetime-dialog"
 import { updateTicketInSessionStorage } from "@/utils/helper"
 import toast from "react-hot-toast"
 import api from "@/lib/api"
+import { useAuth } from "@/context/auth-context"
+import { Dialog } from "@radix-ui/react-dialog"
+import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 
 export default function TicketingDetailPage() {
@@ -30,7 +33,9 @@ export default function TicketingDetailPage() {
   const [showEstimateDialog, setShowEstimateDialog] = useState(false);
   const [remainingTime, setRemainingTime] = useState(0);
   const [showReferDialog, setShowReferDialog] = useState(false);
-
+  const {user} = useAuth()
+  console.log(viewTicket)
+  console.log(user)
   useEffect(() => {
     setTicket(viewTicket);
     if (!viewTicket || !viewTicket._id) {
@@ -40,6 +45,12 @@ export default function TicketingDetailPage() {
 
   }, [viewTicket, router])
 
+  if(ticket?.status === "open"){
+    
+  }
+const EstimatedTimeNotViewCurrentUser = user?.assignedTo?._id !== viewTicket?.assignedTo._id
+
+  console.log(EstimatedTimeNotViewCurrentUser)
 
   const statusTimeline = [
     { id: 1, status: "Open", date: "2025-08-06T01:30:00Z", current: false },
@@ -205,7 +216,7 @@ function formatTime(timestamp: number) {
                 </Button>
               </div>
             )}
-            {ticket?.status === "open" && (
+            {EstimatedTimeNotViewCurrentUser || ticket?.status === "open"  && (
               <Button
                 onClick={handleStartProgress}
                 className="bg-green-600 hover:bg-green-700 text-white cursor-pointer"
@@ -379,7 +390,7 @@ function formatTime(timestamp: number) {
                       {step.status}
                     </p>
                     <p className="text-xs text-neutral-warm-500">
-  {formatTime(new Date(step.time).getTime())}
+                      {formatTime(new Date(step.time).getTime())}
                     </p>
                   </div>
                 </div>
@@ -454,7 +465,27 @@ function formatTime(timestamp: number) {
           </Card>
         </div>
       </div>
-
+<Dialog
+        open={!!selectedImage}
+        onOpenChange={() => setSelectedImage(null)}
+      >
+        <DialogContent className="max-w-full ">
+          <DialogHeader>
+            <DialogTitle>Image Preview</DialogTitle>
+          </DialogHeader>
+          {selectedImage && (
+            <div className="flex justify-center">
+              <Image
+                src={selectedImage || "/placeholder.svg"}
+                alt="Full size preview"
+                className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                width={800}
+                height={1400}
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <EstimateTimeDialog
         open={showEstimateDialog}
