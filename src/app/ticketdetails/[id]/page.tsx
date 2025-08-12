@@ -1,31 +1,63 @@
-"use client"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Textarea } from "@/components/ui/textarea"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Separator } from "@/components/ui/separator"
-import { ArrowUpRight, CheckCircle, MessageSquare, Paperclip, Send, Clock, User, CalendarDays, FileText, ImageIcon, Hash, Info, CalendarCheck, ChevronLeft, ListChecks, Tag, Users, UserCheck, Play, ExternalLink } from 'lucide-react'
-import { useTicket } from "@/context/ticket-context"
-import { useEffect, useState } from "react"
-import { Ticket } from "@/types/tickets"
+"use client";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
+import {
+  ArrowUpRight,
+  CheckCircle,
+  MessageSquare,
+  Paperclip,
+  Send,
+  Clock,
+  User,
+  CalendarDays,
+  FileText,
+  ImageIcon,
+  Hash,
+  Info,
+  CalendarCheck,
+  ChevronLeft,
+  ListChecks,
+  Tag,
+  Users,
+  UserCheck,
+  Play,
+  ExternalLink,
+  FlagTriangleRight,
+} from "lucide-react";
+import { useTicket } from "@/context/ticket-context";
+import { useEffect, useState } from "react";
+import { Ticket } from "@/types/tickets";
 import { useRouter } from "next/navigation";
-import ReferTicketDialog from "@/components/referdepartment-dialog"
-import { ResolveTicketDialog } from "@/components/resolveticket-dialog"
-import { EstimateTimeDialog } from "@/components/estimatetime-dialog"
-import { updateTicketInSessionStorage } from "@/utils/helper"
-import toast from "react-hot-toast"
-import api from "@/lib/api"
-import { useAuth } from "@/context/auth-context"
-import { Dialog } from "@radix-ui/react-dialog"
-import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-
+import ReferTicketDialog from "@/components/referdepartment-dialog";
+import { ResolveTicketDialog } from "@/components/resolveticket-dialog";
+import { EstimateTimeDialog } from "@/components/estimatetime-dialog";
+import { updateTicketInSessionStorage } from "@/utils/helper";
+import toast from "react-hot-toast";
+import api from "@/lib/api";
+import { useAuth } from "@/context/auth-context";
+import { Dialog } from "@/components/ui/dialog";
+import {
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Span } from "next/dist/trace";
 
 export default function TicketingDetailPage() {
   const { viewTicket } = useTicket();
-  const router = useRouter()
-  const [ticket, setTicket] = useState<Ticket>({} as Ticket)
+  const router = useRouter();
+  const [ticket, setTicket] = useState<Ticket>({} as Ticket);
   const [isLoading, setIsLoading] = useState(true);
   const [newComment, setNewComment] = useState("");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -33,93 +65,142 @@ export default function TicketingDetailPage() {
   const [showEstimateDialog, setShowEstimateDialog] = useState(false);
   const [remainingTime, setRemainingTime] = useState(0);
   const [showReferDialog, setShowReferDialog] = useState(false);
-  const {user} = useAuth()
-  console.log(viewTicket)
-  console.log(user)
+  const { user } = useAuth();
+  console.log(viewTicket);
+  console.log(user);
   useEffect(() => {
     setTicket(viewTicket);
     if (!viewTicket || !viewTicket._id) {
       router.replace("/dashboard");
     }
     setIsLoading(false);
+  }, [viewTicket, router]);
 
-  }, [viewTicket, router])
-
-  if(ticket?.status === "open"){
-    
+  if (ticket?.status === "open") {
   }
-const EstimatedTimeNotViewCurrentUser = user?.assignedTo?._id !== viewTicket?.assignedTo._id
+  const EstimatedTimeNotViewCurrentUser =
+    user?.assignedTo?._id !== viewTicket?.assignedTo?._id;
 
-  console.log(EstimatedTimeNotViewCurrentUser)
+  console.log(EstimatedTimeNotViewCurrentUser);
 
   const statusTimeline = [
     { id: 1, status: "Open", date: "2025-08-06T01:30:00Z", current: false },
-    { id: 2, status: "In-Progress", date: "2025-08-06T01:34:00Z", current: true },
+    {
+      id: 2,
+      status: "In-Progress",
+      date: "2025-08-06T01:34:00Z",
+      current: true,
+    },
     { id: 3, status: "Resolved", date: null, current: false },
     { id: 4, status: "Closed", date: null, current: false },
-  ]
+  ];
 
-function formatTime(timestamp: number) {
-  const date = new Date(timestamp);
+  function formatTime(timestamp: number) {
+    const date = new Date(timestamp);
 
-  const options: Intl.DateTimeFormatOptions = {
-    year: "numeric",
-    month: "short",  // e.g., Aug
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true     // or false if you want 24-hour format
-  };
+    const options: Intl.DateTimeFormatOptions = {
+      year: "numeric",
+      month: "short", // e.g., Aug
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true, // or false if you want 24-hour format
+    };
 
-  return date.toLocaleString("en-US", options);
-}
-
-
+    return date.toLocaleString("en-US", options);
+  }
 
   const calculateTimeLeft = (dueDateIso: string) => {
-  if (!dueDateIso) return "00:00:00 left";
+    if (!dueDateIso) return "Overdue";
 
-  const now = new Date();
-  const dueDate = new Date(dueDateIso);
-  const diffMs = dueDate.getTime() - now.getTime();
+    const now = new Date();
+    const dueDate = new Date(dueDateIso);
+    const diffMs = dueDate.getTime() - now.getTime();
 
-  if (diffMs < 0 ) return "Overdue";
+    if (diffMs < 0) return "Overdue";
 
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-  const diffSeconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    const diffSeconds = Math.floor((diffMs % (1000 * 60)) / 1000);
 
-  return `${String(diffHours).padStart(2, '0')}:${String(diffMinutes).padStart(2, '0')}:${String(diffSeconds).padStart(2, '0')} left`;
-};
+    return `${String(diffHours).padStart(2, "0")}:${String(
+      diffMinutes
+    ).padStart(2, "0")}:${String(diffSeconds).padStart(2, "0")} left`;
+  };
 
-
+  // const getStatusBadge = (status: string) => {
+  //   switch (status) {
+  //     case "in-progress":
+  //       return (
+  //         <Badge className=" text-neutral-dark-900 hover:bg-status-warning-600">
+  //           In Progress
+  //         </Badge>
+  //       );
+  //     case "resolved":
+  //       return (
+  //         <Badge className=" text-[#388E3C] hover:bg-status-success-600">
+  //           Resolved
+  //         </Badge>
+  //       );
+  //     case "pending":
+  //       return (
+  //         <Badge className="bg-brand-primary-300 text-brand-primary-900 hover:bg-brand-primary-400">
+  //           Pending
+  //         </Badge>
+  //       );
+  //     case "open":
+  //       return <Badge className=" text-neutral-dark-700">Open</Badge>;
+  //     default:
+  //       return <Badge className=" text-neutral-dark-700">{status}</Badge>;
+  //   }
+  // };
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "in-progress":
-        return <Badge   className=" text-neutral-dark-900 hover:bg-status-warning-600">In Progress</Badge>
-      case "resolved":
-        return <Badge className=" text-[#388E3C] hover:bg-status-success-600">Resolved</Badge>
-      case "pending":
-        return <Badge className="bg-brand-primary-300 text-brand-primary-900 hover:bg-brand-primary-400">Pending</Badge>
+    switch (status?.toLowerCase()) {
       case "open":
-        return <Badge className=" text-neutral-dark-700">Open</Badge>
+        return (
+          <Badge className="bg-red-200 text-red-600 px-4 py-1 rounded-xl ">
+            Open
+          </Badge>
+        );
+      case "in-progress":
+        return (
+          <Badge className="bg-yellow-100 text-yellow-600 p-2 rounded-xl ">
+            In Progress
+          </Badge>
+        );
+      case "resolved":
+        return (
+          <Badge className="bg-green-500 text-green-50 p-2 rounded-xl">
+            Resolved
+          </Badge>
+        );
+      case "closed":
+        return (
+          <Badge className="bg-blue-200 text-blue-500 p-2 rounded-xl">
+            Closed
+          </Badge>
+        );
       default:
-        return <Badge className=" text-neutral-dark-700">{status}</Badge>
+        return (
+          <Badge className="bg-gray-300 text-black">
+            {status || "Unknown"}
+          </Badge>
+        );
     }
-  }
+  };
 
   const getAttachmentIcon = (type: string) => {
     switch (type) {
       case "image":
-        return <ImageIcon className="w-5 h-5 text-neutral-dark-500" />
+        return <ImageIcon className="w-5 h-5 text-neutral-dark-500" />;
       case "pdf":
-        return <FileText className="w-5 h-5 text-status-danger-500" />
+        return <FileText className="w-5 h-5 text-status-danger-500" />;
       case "spreadsheet":
-        return <FileText className="w-5 h-5 text-status-success-500" />
+        return <FileText className="w-5 h-5 text-status-success-500" />;
       default:
-        return <Paperclip className="w-5 h-5 text-neutral-dark-500" />
+        return <Paperclip className="w-5 h-5 text-neutral-dark-500" />;
     }
-  }
+  };
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -173,34 +254,46 @@ function formatTime(timestamp: number) {
 
   const statusSteps = [
     { status: "open", time: ticket?.createdAt },
-    ticket?.inProgressAt && { status: "in-progress", time: ticket?.inProgressAt },
+    ticket?.inProgressAt && {
+      status: "in-progress",
+      time: ticket?.inProgressAt,
+    },
     ticket?.resolvedAt && { status: "resolved", time: ticket.resolvedAt },
     ticket?.closedAt && { status: "closed", time: ticket.closedAt },
   ].filter(Boolean) as { status: string; time: string }[];
 
-
   if (isLoading) {
-    return <>Loading....</>
+    return <>Loading....</>;
   }
 
   return (
-    <div className="min-h-screen p-5 bg-gradient-to-b from-gray-50 to-green-100 font-sans flex flex-col">
+    <div className="min-h-screen p-5 bg-gray-50 font-sans flex flex-col">
       {/* Header/Top Actions Module */}
-      <header className="bg-white mt-5 justify-between bg-[#99d98c]  border border-[#E0E0E0] p-4 md:px-8 rounded-full shadow-md w-full flex items-center">
+      <header className="mt-5 flex justify-between items-center w-full rounded-md border border-gray-300 bg-green-100 p-4 md:px-8 shadow-sm hover:shadow-md transition-shadow duration-300">
         <div className="flex items-center gap-4">
-
           <div className="flex flex-col sm:flex-row sm:items-center gap-1">
-            <h1 className="text-2xl md:text-3xl font-bold text-neutral-dark-900">{ticket?.title}</h1>
-            <div className="bg-yellow-100 text-yellow-700 mt-2 px-2 ml-4 border rounded-full">{getStatusBadge(ticket.status)}</div>
+            <h1 className="text-2xl md:text-3xl font-semibold text-gray-900">
+              {ticket?.title}
+            </h1>
+            <div className="mt-2 ml-4 rounded-full">
+              {getStatusBadge(ticket.status)}
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-
-            {ticket?.status !== 'resolved' &&<div className={`flex items-center gap-1 text-sm font-medium ${isOverdue ? 'text-status-danger-600' : 'text-neutral-dark-700'}`}>
-              <Clock className="w-4 h-4" />
-              <span>{ calculateTimeLeft(ticket?.estimatedResolutionTime ?? "")}</span>
-            </div>}
+            {ticket?.status !== "resolved" && (
+              <div
+                className={`flex items-center gap-1 text-sm font-semibold ${
+                  isOverdue ? "text-red-600" : "text-gray-700"
+                }`}
+              >
+                <Clock className="w-4 h-4 text-gray-600" />
+                <span>
+                  {calculateTimeLeft(ticket?.estimatedResolutionTime ?? "")}
+                </span>
+              </div>
+            )}
           </div>
           <div className="flex gap-2">
             {ticket.status !== "resolved" && (
@@ -208,7 +301,7 @@ function formatTime(timestamp: number) {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="bg-green-600 hover:bg-green-700 text-white hover:text-white"
+                  className="bg-green-600 hover:bg-green-700 text-white hover:text-white shadow-sm hover:shadow-md transition"
                   onClick={() => setShowReferDialog(true)}
                 >
                   <ExternalLink className="h-4 w-4 mr-2" />
@@ -216,10 +309,10 @@ function formatTime(timestamp: number) {
                 </Button>
               </div>
             )}
-            {EstimatedTimeNotViewCurrentUser || ticket?.status === "open"  && (
+            {(EstimatedTimeNotViewCurrentUser || ticket?.status === "open") && (
               <Button
                 onClick={handleStartProgress}
-                className="bg-green-600 hover:bg-green-700 text-white cursor-pointer"
+                className="bg-green-600 hover:bg-green-700 text-white shadow-sm hover:shadow-md transition cursor-pointer"
               >
                 <Play className="h-4 w-4 mr-2" />
                 Accept Ticket
@@ -228,7 +321,7 @@ function formatTime(timestamp: number) {
             {ticket?.status === "in-progress" && (
               <Button
                 onClick={() => setShowResolveDialog(true)}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-green-600 hover:bg-green-700 text-white shadow-sm hover:shadow-md transition"
               >
                 <CheckCircle className="h-4 w-4 mr-2" />
                 Mark as Resolved
@@ -243,83 +336,136 @@ function formatTime(timestamp: number) {
         {/* Left Column: Ticket Details (Overview, Description, Attachments, Status History) */}
         <div className="lg:col-span-2 space-y-6">
           {/* Ticket Overview/Metadata Module */}
-          <Card className="shadow-md border border-[#E0E0E0]  rounded-lg">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-xl font-semibold text-neutral-dark-800 flex items-center gap-2">
-                <Info className="w-5 h-5 text-neutral-dark-600" />
+          <Card className="rounded-xl border border-gray-200 shadow-lg bg-white overflow-hidden transition-all duration-200 hover:shadow-xl p-0">
+            {/* Header */}
+            <CardHeader className=" bg-green-100 border-b border-gray-200 ">
+              <CardTitle className="text-lg font-semibold text-gray-800 flex items-center gap-3  ">
+                <Info className="w-6 h-6 text-green-700" />
                 Ticket Details
               </CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-neutral-dark-700">
+
+            {/* Content */}
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-700 py-5">
               <div className="flex items-center gap-2">
-                <User className="w-4 h-4 text-neutral-dark-500" />
-                <span>Created by: <span className="font-medium text-neutral-dark-900">{ticket?.createdBy?.assignedTo?.name}</span></span>
+                <User className="w-4 h-4 text-green-700" strokeWidth={2.5} />
+                <span>
+                  Created by:{" "}
+                  <span className="font-medium text-gray-900">
+                    {ticket?.createdBy?.assignedTo?.name}
+                  </span>
+                </span>
               </div>
               <div className="flex items-center gap-2">
-                <CalendarDays className="w-4 h-4 text-neutral-dark-500" />
-<span>
-  Created At:{" "}
-  <span className="font-medium text-neutral-dark-900">
-    {formatTime(new Date(ticket?.createdAt || "").getTime())}
-  </span>
-</span>
+                <CalendarDays
+                  className="w-4 h-4 text-green-700"
+                  strokeWidth={2.5}
+                />
+                <span>
+                  Created At:{" "}
+                  <span className="font-medium text-gray-900">
+                    {formatTime(new Date(ticket?.createdAt || "").getTime())}
+                  </span>
+                </span>
               </div>
               <div className="flex items-center gap-2">
+                <FlagTriangleRight
+                  className="w-4 h-4 text-green-700"
+                  strokeWidth={2.5}
+                />
                 <span>Status:</span>
                 {getStatusBadge(ticket?.status)}
-
+              </div>
+              {/* const priority = ticket.priority?.trim().toLowerCase(); */}
+              <div className="flex items-center gap-2">
+                <Tag className="w-4 h-4 text-green-700" strokeWidth={2.5} />
+                <span>
+                  Priority:{" "}
+                  <span
+                    className={`px-3 py-1 rounded-md text-xs font-semibold
+                    
+                         ${
+                           ticket.priority === "High"
+                             ? "bg-red-200 text-red-700"
+                             : ticket.priority === "Medium"
+                             ? "bg-yellow-200 text-yellow-600"
+                             : ticket.priority === "Low"
+                             ? "bg-green-500 text-white"
+                             : "bg-blue-200 text-blue-700"
+                         }`}
+                  >
+                    {" "}
+                    {ticket.priority}
+                  </span>
+                </span>
               </div>
               <div className="flex items-center gap-2">
-                <Tag className="w-4 h-4 text-neutral-dark-500" />
-                <span>Priority: <span className="font-medium text-neutral-dark-900">{ticket.priority}</span></span>
-              </div>
-              {/* <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-neutral-dark-500" />
-                <span>Department: <span className="font-medium text-neutral-dark-900">{ticket?.assignedTo?.name}</span></span>
-              </div> */}
-              <div className="flex items-center gap-2">
-                <UserCheck className="w-4 h-4 text-neutral-dark-500" />
-                <span>Assigned To: <span className="font-medium text-neutral-dark-900">{ticket?.assignedTo?.name}</span></span>
+                <UserCheck
+                  className="w-4 h-4 text-green-700"
+                  strokeWidth={2.5}
+                />
+                <span>
+                  Assigned To:{" "}
+                  <span className="font-medium text-gray-900">
+                    {ticket?.assignedTo?.name}
+                  </span>
+                </span>
               </div>
             </CardContent>
           </Card>
 
           {/* Description Module */}
-          <Card className="shadow-md border border-[#E0E0E0] rounded-lg">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-xl font-semibold text-neutral-dark-800">Description</CardTitle>
+
+          <Card className="rounded-xl border border-gray-200 shadow-lg bg-white overflow-hidden transition-all duration-200 hover:shadow-xl pt-0 ">
+            <CardHeader className="  bg-green-100 border-b border-gray-200">
+              <CardTitle className="text-lg font-semibold text-gray-800 flex items-center gap-3  ">
+                <FileText className="w-6 h-6 text-green-700" />
+                Description
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-neutral-dark-700 leading-relaxed text-base">{ticket.description}</p>
+              <CardDescription>
+                {" "}
+                <p className="text-neutral-dark-700 leading-relaxed text-base">
+                  {ticket.description}
+                </p>
+              </CardDescription>
             </CardContent>
           </Card>
 
           {/* Attachments Module */}
           {ticket?.images?.length > 0 && (
-            <Card className="shadow-md border border-[#E0E0E0] rounded-lg">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-xl font-semibold text-neutral-dark-800 flex items-center gap-2">
-                  <Paperclip className="w-5 h-5 text-neutral-dark-600" />
-                  Attachments ({ticket?.images?.length})
+            <Card className="rounded-xl border border-gray-200 shadow-lg bg-white overflow-hidden transition-all duration-200 hover:shadow-xl p-0">
+              {/* Header */}
+              <CardHeader className="bg-green-100 border-b border-gray-200 ">
+                <CardTitle className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                  <Paperclip className="w-5 h-5 text-green-700" />
+                  Attachments
+                  <span className="text-sm font-medium text-gray-500">
+                    ({ticket.images.length})
+                  </span>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                  {ticket?.images.map((image, index) => (
+
+              {/* Content */}
+              <CardContent className="p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+                  {ticket?.images?.map((image, index) => (
                     <div
                       key={index}
-                      className="relative group cursor-pointer rounded-lg overflow-hidden border hover:shadow-md transition-shadow"
+                      className="relative group cursor-pointer rounded-lg overflow-hidden border border-gray-200 bg-gray-50 hover:shadow-md transition-all duration-200"
                       onClick={() => setSelectedImage(image)}
                     >
                       <Image
                         src={image || "/placeholder.svg"}
                         alt={`Attachment ${index + 1}`}
-                        className="w-full h-32 object-cover"
+                        className="w-full h-36 object-cover transition-transform duration-300 group-hover:scale-105"
                         width={200}
-                        height={600}
+                        height={150}
                         priority={false}
                       />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                      {/* Hover overlay */}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
                         <ImageIcon className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
                     </div>
@@ -328,105 +474,117 @@ function formatTime(timestamp: number) {
               </CardContent>
             </Card>
           )}
-
         </div>
 
         {/* Right Column: Comments/Activity Feed */}
         <div className="lg:col-span-1.5  space-y-6">
           {/* Status Timeline Module */}
-          <Card className="shadow-md border border-neutral-warm-200 rounded-lg">
-            <CardHeader className="pb-3">
+          <Card className="rounded-xl border border-gray-200 shadow-lg bg-white overflow-hidden transition-all duration-200 hover:shadow-xl p-0">
+            <CardHeader className="bg-green-100 border-b border-gray-200">
               <CardTitle className="text-lg font-semibold text-neutral-warm-800 flex items-center gap-2">
-                <ListChecks className="w-4 h-4 text-[#525252]" />
+                <ListChecks className="w-4 h-4 text-green-700" />
                 Status History
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-0">
-              {/* {ticket.status.map((step, index) => ( */}
-              {statusSteps.map((step, index) => (
-                <div key={step.status} className="flex gap-3">
-                  {/* Dot + line */}
-                  <div className="flex flex-col items-center">
-                    <div
-                      className={`w-3 h-3 rounded-full ${step.status === "open"
-                          ? "bg-[#C62828]"
-                          : step.status === "in-progress"
-                            ? "bg-[#FFB300]"
-                            : step.status === "resolved"
-                              ? "bg-[#388E3C]"
-                              : step.status === "closed"
-                                ? "bg-[#0288D1]"
-                                : "bg-gray-400"
-                        }`}
-                    />
-                    {index < statusSteps.length - 1 && (
-                      <div
-                        className={`w-px h-12 ${step.status === "open"
-                            ? "bg-[#C62828]"
-                            : step.status === "in-progress"
-                              ? "bg-[#FFB300]"
-                              : step.status === "resolved"
-                                ? "bg-[#388E3C]"
-                                : "bg-[#0288D1]"
-                          }`}
-                      />
-                    )}
-                  </div>
+            <CardContent className="space-y-0 pb-4">
+              {["open", "in-progress", "resolved", "closed"].map(
+                (status, index) => {
+                  const step = statusSteps.find((s) => s.status === status);
+                  const reached = !!step;
 
-                  {/* Text */}
-                  <div>
-                    <p
-                      className={`font-medium -mt-1 capitalize ${step.status === "open"
-                          ? "text-[#C62828]"
-                          : step.status === "in-progress"
-                            ? "text-[#FFB300]"
-                            : step.status === "resolved"
-                              ? "text-[#388E3C]"
-                              : step.status === "closed"
-                                ? "text-[#0288D1]"
-                                : ""
-                        }`}
-                    >
-                      {step.status}
-                    </p>
-                    <p className="text-xs text-neutral-warm-500">
-                      {formatTime(new Date(step.time).getTime())}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                  const colors: Record<string, { dot: string; text: string }> =
+                    {
+                      open: { dot: "bg-[#C62828]", text: "text-[#C62828]" },
+                      "in-progress": {
+                        dot: "bg-[#FFB300]",
+                        text: "text-[#FFB300]",
+                      },
+                      resolved: { dot: "bg-[#388E3C]", text: "text-[#388E3C]" },
+                      closed: { dot: "bg-[#0288D1]", text: "text-[#0288D1]" },
+                    };
 
-              {/* ))} */}
+                  const dotColor = reached ? colors[status].dot : "bg-gray-400";
+                  const textColor = reached
+                    ? colors[status].text
+                    : "text-gray-400";
+                  const lineColor = reached
+                    ? colors[status].dot
+                    : "bg-gray-300";
+
+                  return (
+                    <div key={status} className="flex gap-3">
+                      {/* Dot + line */}
+                      <div className="flex flex-col items-center">
+                        <div className={`w-3 h-3 rounded-full ${dotColor}`} />
+                        {index < 3 && (
+                          <div className={`w-px h-12 ${lineColor}`} />
+                        )}
+                      </div>
+
+                      {/* Text */}
+                      <div>
+                        <p
+                          className={`font-medium -mt-1 capitalize ${textColor}`}
+                        >
+                          {status}
+                        </p>
+                        {reached && (
+                          <p className="text-xs text-neutral-warm-500">
+                            {formatTime(new Date(step.time).getTime())}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                }
+              )}
             </CardContent>
-
           </Card>
 
           {/* Comments/Activity Feed Module - Redesigned */}
-          <Card className="shadow-md border border-neutral-warm-200 rounded-lg flex flex-col h-max">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-xl font-bold text-neutral-warm-800 flex items-center gap-2">
-                <MessageSquare className="w-5 h-5 text-[#525252]" />
+          <Card className="rounded-xl border border-gray-200 shadow-lg bg-white overflow-hidden transition-all duration-200 hover:shadow-xl p-0">
+            <CardHeader className="bg-green-100 border-b border-gray-200">
+              <CardTitle className="text-xl font-semibold text-neutral-warm-800 flex items-center gap-2">
+                <MessageSquare className="w-5 h-5 text-green-700" />
                 Comments ({ticket?.comments?.length})
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex-1 flex flex-col justify-between">
-              <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 -mr-2 mb-4">
+            <CardContent className="flex-1 flex flex-col   justify-between">
+              <div className="space-y-4 max-h-[300px]  overflow-y-auto font-light pr-2 mr-2 mb-4">
                 {ticket?.comments?.length === 0 && (
-                  <p className="text-[#525252] text-center py-4">No newComment yet. Be the first to add one!</p>
+                  <p className="text-[#525252] text-center py-4 font-light">
+                    No Comments yet. Be the first to add one!
+                  </p>
                 )}
                 {ticket?.comments?.map((comment) => (
-                  <div key={comment?._id} className="flex items-start gap-3 p-3 bg-[#F0F0F0] rounded-lg border border-[#E0E0E0]">
+                  <div
+                    key={comment?._id}
+                    className="flex items-start gap-3  p-3 bg-gray-100 rounded-lg border border-[#E0E0E0]"
+                  >
                     <Avatar className="w-9 h-9 border border-[#E0E0E0] flex-shrink-0">
-                      <AvatarImage src={comment?.commentedBy?.name || "/placeholder.svg"} alt={comment?.commentedBy?.name} />
-                      <AvatarFallback>{comment?.commentedBy?.name.split(" ").map((n) => n[0]).join("")}</AvatarFallback>
+                      <AvatarImage
+                        src={comment?.commentedBy?.name || "/placeholder.svg"}
+                        alt={comment?.commentedBy?.name}
+                      />
+                      <AvatarFallback>
+                        {comment?.commentedBy?.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 grid gap-1">
-                      <div className="flex items-center justify-between">
-                        <div className="font-semibold text-[#262626] text-sm">{comment?.commentedBy?.name}</div>
-                        <div className="text-xs text-[#525252]">{formatTime(new Date(comment?.createdAt).getTime())}
+                      <div className="flex flex-start   flex-col ">
+                        <div className="font-semibold text-[#262626] text-sm">
+                          {comment?.commentedBy?.name}
+                        </div>
+                        <div className="text-xs  text-[#525252]">
+                          {formatTime(new Date(comment?.createdAt).getTime())}
                         </div>
                       </div>
-                      <p className="text-sm text-[#404040] leading-snug">{comment?.comment}</p>
+                      <p className="text-sm text-[#404040] leading-snug">
+                        {comment?.comment}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -435,37 +593,35 @@ function formatTime(timestamp: number) {
               <Separator className="my-4 bg-[#E0E0E0]" />
 
               {ticket.status === "open" ? (
-
-                <div className="space-y-2">
+                <div className="  py-2 px-2  text-sm">
                   <div>Accept the Ticket to add Comments</div>
                 </div>
               ) : (
-
-                ticket.status !== "resolved" &&
-                <div className="space-y-2">
-                  <Textarea
-                    placeholder="Add a comment..."
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    className="min-h-20"
-                  />
-                  <Button
-                    onClick={handleAddComment}
-                    size="sm"
-                    className="w-full bg-green-600"
-                    disabled={!newComment.trim()}
-                  >
-                    <Send className="h-4 w-4 mr-2" />
-                    Add Comment
-                  </Button>
-                </div>
+                ticket.status !== "resolved" && (
+                  <div className="space-y-2">
+                    <Textarea
+                      placeholder="Add a comment..."
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      className="min-h-20"
+                    />
+                    <Button
+                      onClick={handleAddComment}
+                      size="sm"
+                      className="w-full bg-green-600"
+                      disabled={!newComment.trim()}
+                    >
+                      <Send className="h-4 w-4 mr-2" />
+                      Add Comment
+                    </Button>
+                  </div>
+                )
               )}
-
             </CardContent>
           </Card>
         </div>
       </div>
-<Dialog
+      <Dialog
         open={!!selectedImage}
         onOpenChange={() => setSelectedImage(null)}
       >
@@ -510,6 +666,5 @@ function formatTime(timestamp: number) {
         setTicket={setTicket}
       />
     </div>
-  )
+  );
 }
-
