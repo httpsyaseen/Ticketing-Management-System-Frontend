@@ -14,96 +14,82 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { useAuth } from "@/context/auth-context";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 
-// Navigation items
 const navItems = [
-  {
-    title: "Dashboard",
-    icon: BarChart3,
-    url: "/dashboard",
-  },
-  {
-    title: "Your Tickets",
-    icon: Ticket,
-    url: "/user-tickets",
-  },
-  {
-    title: "Reports and Analytics",
-    icon: ChartAreaIcon,
-    url: "/reports",
-  },
- 
-
-  {
-    title: "Users",
-    icon: Users,
-    url: "/users",
-  },
-  // {
-  //   title: "Settings",
-  //   icon: Settings,
-  //   url: "/settings",
-  // },
+  { title: "Dashboard", icon: BarChart3, url: "/dashboard" },
+  { title: "Your Tickets", icon: Ticket, url: "/user-tickets" },
+  { title: "Reports and Analytics", icon: ChartAreaIcon, url: "/reports" },
+  { title: "Users", icon: Users, url: "/users" },
 ];
 
 export default function AppSidebar() {
   const { isAuthenticated, user } = useAuth();
+  const {openMobile, setOpenMobile} = useSidebar()
   const pathname = usePathname();
 
-  if (!isAuthenticated) {
-    return <></>;
-  }
+  if (!isAuthenticated) return null;
 
   return (
-    <Sidebar>
-      <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem className="flex">
-            <SidebarMenuButton size="lg" asChild>
-              <Link href="/" className="font-semibold">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg  text-sidebar-primary-foreground">
-                  <Image
-                    src={
-                      "https://psba.gop.pk/wp-content/uploads/2025/03/cropped-SAHULAT-BAZAAR-LOGO.png"
-                    }
-                    alt="Company Logo"
-                    width={40}
-                    height={40}
-                    className=" mt-5 object-contain mb-4"
-                    priority
-                  />
-                </div>
-                <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-semibold">PSBA Ticketing</span>
-                  <span className="text-xs">Management System</span>
-                </div>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+    <Sidebar className=" border-r border-gray-200">
+      {/* Header */}
+      <SidebarHeader className="px-5 py-3 bg-white border-b border-gray-200">
+        <Link href="/" className="flex items-center gap-3">
+          <Image
+            src="https://psba.gop.pk/wp-content/uploads/2025/03/cropped-SAHULAT-BAZAAR-LOGO.png"
+            alt="Company Logo"
+            width={40}
+            height={40}
+            className="object-contain"
+            priority
+          />
+          <div className="flex flex-col leading-tight">
+            <span className="font-semibold text-gray-900">
+              PSBA Ticketing
+            </span>
+            <span className="text-xs text-gray-500">Management System</span>
+          </div>
+        </Link>
       </SidebarHeader>
-      <SidebarContent>
+
+      {/* Navigation */}
+      <SidebarContent className="px-3 py-4">
         <SidebarGroup>
-          <SidebarGroupLabel className="mt-4 font-bold text-md">
+          <SidebarGroupLabel className="text-gray-500 text-xs font-semibold uppercase tracking-wide mb-3">
             Navigation
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="mt-5">
+            <SidebarMenu className="space-y-1">
               {navItems.map((item) => {
                 if (item.title === "Users" && user?.role !== "superadmin") {
                   return null;
                 }
+
+                const isActive = pathname === item.url;
+
                 return (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={pathname === item.url}>
+                    <SidebarMenuButton
+                      asChild
+                      className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200
+                        ${
+                          isActive
+                            ? "bg-green-100 text-green-700 font-medium border border-green-200"
+                            : "text-gray-700 hover:bg-green-50 hover:text-green-700"
+                        }`}
+                    >
                       <Link href={item.url}>
-                        <item.icon />
-                        <span className="text-base">{item.title}</span>
+                        <item.icon
+                          className={`w-5 h-5 ${
+                            isActive ? "text-green-600" : "text-gray-500"
+                          }`}
+                        />
+                        <span className="text-sm">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -113,6 +99,8 @@ export default function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      {/* SidebarRail keeps collapse functionality */}
       <SidebarRail />
     </Sidebar>
   );

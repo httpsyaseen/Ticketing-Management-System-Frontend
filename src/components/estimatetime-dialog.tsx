@@ -50,6 +50,11 @@ export function EstimateTimeDialog({
 
   const isFutureDate = date && hour !== "" && minute !== "";
 
+const isBeforeToday = (d: Date) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // reset to midnight
+  return d < today;
+};
   const handleSet = async () => {
     if (!date) return;
 
@@ -102,12 +107,12 @@ export function EstimateTimeDialog({
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={date ?? undefined}
-                  onSelect={(d) => d && d > new Date() && setDate(d)}
-                  disabled={(d) => d < new Date()}
-                />
+               <Calendar
+  mode="single"
+  selected={date ?? undefined}
+  onSelect={(d) => d && setDate(d)}
+  disabled={isBeforeToday}
+/>
               </PopoverContent>
             </Popover>
           </div>

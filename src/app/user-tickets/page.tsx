@@ -12,7 +12,7 @@ import { Ticket } from "@/types/tickets";
 
 export default function TicketManagementPage() {
   const { user, isLoading } = useAuth();
-  const { setAssignTickets, assignTickets, setViewTicket } = useTicket();
+  const {assignTickets,setAssignTickets,addTicket, setMyTickets, myTickets, setViewTicket } = useTicket();
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState("all");
@@ -25,7 +25,8 @@ export default function TicketManagementPage() {
         const res = await api.get(`/ticket/getusertickets`);
         const data = res.data;
         if (data?.data?.tickets) {
-          setAssignTickets(data.data.tickets);
+          addTicket(data.data.tickets)
+          setMyTickets(data.data.tickets);
         }
       } catch (err) {
         console.error("Failed to fetch tickets:", err);
@@ -35,12 +36,12 @@ export default function TicketManagementPage() {
     if (!isLoading) {
       fetchTickets();
     }
-  }, [user, isLoading, setAssignTickets]);
+  }, [user, isLoading, setMyTickets]);
 
   const filteredTickets = useMemo(() => {
-    if (activeTab === "all") return assignTickets;
+    if (activeTab === "all") return myTickets;
 
-    return assignTickets.filter((ticket) => {
+    return myTickets.filter((ticket) => {
       const status = ticket.status?.toLowerCase();
       if (activeTab === "resolved") {
         return status === "resolved" || status === "closed";
@@ -50,19 +51,22 @@ export default function TicketManagementPage() {
       }
       return status === activeTab;
     });
-  }, [assignTickets, activeTab]);
+  }, [myTickets, activeTab]);
 
   // Tab ticket counts
   const getTabCount = (status: string) => {
-    if (status === "all") return assignTickets.length;
+  if (!Array.isArray(myTickets)) return 0; // Prevent crash
 
-    return assignTickets.filter((ticket) => {
-      const s = ticket.status?.toLowerCase();
-      if (status === "resolved") return s === "resolved" || s === "closed";
-      if (status === "in-progress") return s === "in-progress"; // <-- fix here
-      return s === status;
-    }).length;
-  };
+  if (status === "all") return myTickets.length;
+
+  return myTickets.filter((ticket) => {
+    const s = ticket.status?.toLowerCase();
+    if (status === "resolved") return s === "resolved" || s === "closed";
+    if (status === "in-progress") return s === "in-progress";
+    return s === status;
+  }).length;
+};
+
 
   // Handle view
   const handleViewTicket = (ticket: Ticket) => {
@@ -83,7 +87,7 @@ export default function TicketManagementPage() {
       />
       <DataTable
         columns={getTicketColumns(handleViewTicket)}
-        data={filteredTickets}
+        data={filteredTickets || myTickets}
         rowsPerPage={rowsPerPage}
         setRowsPerPage={setRowsPerPage}
       />

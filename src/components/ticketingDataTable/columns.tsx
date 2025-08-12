@@ -2,7 +2,7 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Ticket } from "@/types/tickets";
-import { getStatusBadge } from "@/components/helper-components";
+import { getPriorityBadge, getStatusBadge } from "@/components/helper-components";
 import { formatDateTime } from "@/utils/helper";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
@@ -34,7 +34,11 @@ export const getTicketColumns = (
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => getStatusBadge(row.original.status),
+     cell: ({ row }) => (
+    <div className="flex justify-center">
+      {getStatusBadge(row.original.status)}
+    </div>
+  ),
   },
 
   // ✅ New Columns
@@ -42,7 +46,7 @@ export const getTicketColumns = (
     accessorKey: "estimatedResolutionTime",
     header: "Estimated Resolution Time",
     cell: ({ row }) => (
-      <span className="text-sm">
+      <span className="text-sm flex justify-center">
         {row.original.estimatedResolutionTime
           ? formatDateTime(row.original.estimatedResolutionTime)
           : "Not set yet"}
@@ -64,10 +68,8 @@ export const getTicketColumns = (
     accessorKey: "priority",
     header: "Priority",
     cell: ({ row }) => (
-      <span className="capitalize">
-        {row.original.priority || "Not set yet"}
-      </span>
-    ),
+      getPriorityBadge(row.original.priority)
+    )
   },
 
   {

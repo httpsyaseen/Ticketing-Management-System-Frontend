@@ -41,3 +41,25 @@ export type Ticket = {
   }[];
   // __v: number;
 };
+
+
+export interface TicketData {
+  _id: string
+  title: string
+  status: string
+  priority: string
+  createdAt: string
+  createdBy?: {
+    assignedTo?: {
+      name: string
+    }
+  }
+  assignedTo?: { name: string } | string
+}
+
+export interface StatusCounts {
+  all: number
+  open: number
+  inProgress: number
+  resolved: number
+}

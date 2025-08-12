@@ -48,9 +48,9 @@ export default function TicketingDetailPage() {
   if(ticket?.status === "open"){
     
   }
-const EstimatedTimeNotViewCurrentUser = user?.assignedTo?._id !== viewTicket?.assignedTo._id
+// const EstimatedTimeNotViewCurrentUser = user?.assignedTo?._id === viewTicket?.assignedTo?._id
 
-  console.log(EstimatedTimeNotViewCurrentUser)
+  // console.log(EstimatedTimeNotViewCurrentUser)
 
   const statusTimeline = [
     { id: 1, status: "Open", date: "2025-08-06T01:30:00Z", current: false },
@@ -184,7 +184,7 @@ function formatTime(timestamp: number) {
   }
 
   return (
-    <div className="min-h-screen p-5 bg-gradient-to-b from-gray-50 to-green-100 font-sans flex flex-col">
+    <div className="min-h-screen p-5 bg-gradient-to-t from-gray-50 to-green-100 font-sans flex flex-col">
       {/* Header/Top Actions Module */}
       <header className="bg-white mt-5 justify-between bg-[#99d98c]  border border-[#E0E0E0] p-4 md:px-8 rounded-full shadow-md w-full flex items-center">
         <div className="flex items-center gap-4">
@@ -216,7 +216,7 @@ function formatTime(timestamp: number) {
                 </Button>
               </div>
             )}
-            {EstimatedTimeNotViewCurrentUser || ticket?.status === "open"  && (
+            { ticket?.status === "open"  && (
               <Button
                 onClick={handleStartProgress}
                 className="bg-green-600 hover:bg-green-700 text-white cursor-pointer"

@@ -60,8 +60,8 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const addTicket = (ticket: Ticket) => {
-    setMyTickets((prev) => [...prev, ticket]);
-  };
+  setMyTickets((prev) => Array.isArray(prev) ? [...prev, ticket] : [ticket]);
+};
 
   const getTicketById = (id: string) => {
     return myTickets.find((ticket) => ticket._id === id);

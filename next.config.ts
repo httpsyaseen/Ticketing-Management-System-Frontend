@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
       "172.16.21.168",
       "psba.gop.pk",
       "0.0.0.0",
+      "172.16.21.109"
     ],
   },
   reactStrictMode: true,
