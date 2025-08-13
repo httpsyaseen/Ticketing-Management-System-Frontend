@@ -1,26 +1,8 @@
 "use client";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
-import {
-  CheckCircle,
-  MessageSquare,
-  Paperclip,
-  Send,
-  User,
-  CalendarDays,
-  FileText,
-  ImageIcon,
-  Info,
-  ListChecks,
-  Tag,
-  UserCheck,
-  Play,
-  FlagTriangleRight,
-} from "lucide-react";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+
+import { CheckCircle, ListChecks, Play } from "lucide-react";
 
 import { useEffect, useState } from "react";
 import { Ticket } from "@/types/tickets";
@@ -32,11 +14,9 @@ import { EstimateTimeDialog } from "@/components/estimatetime-dialog";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
 import { useAuth } from "@/context/auth-context";
-import { getStatusBadge } from "@/components/helper-components";
-import { Timer } from "@/components/timer";
 import { formatTime } from "@/utils/helper";
 import { StatusTimeline } from "@/components/status-timeline";
-import { ImageViewerDialog } from "@/components/image-viewer-dialog";
+
 import { CloseTicketDialog } from "@/components/close-ticket-dialog";
 import showError from "@/components/send-error";
 import TicketDetailComment from "@/components/TicketDetailComment";
@@ -49,7 +29,7 @@ export default function TicketingDetailPage() {
   const [ticket, setTicket] = useState<Ticket>({} as Ticket);
   const [isLoading, setIsLoading] = useState(true);
   const [newComment, setNewComment] = useState("");
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
   const [showResolveDialog, setShowResolveDialog] = useState(false);
   const [showEstimateDialog, setShowEstimateDialog] = useState(false);
 
@@ -144,10 +124,7 @@ export default function TicketingDetailPage() {
       </header>
       <div className="flex-1 grid grid-cols-2 lg:grid-cols-3 gap-6 md:py-4  w-full">
         <div className="lg:col-span-2 space-y-6">
-          <TicketDetailsSection
-            ticket={ticket}
-            formatTime={formatTime}
-          />
+          <TicketDetailsSection ticket={ticket} formatTime={formatTime} />
 
           <TicketDetailDescription description={ticket.description} />
 
@@ -156,7 +133,6 @@ export default function TicketingDetailPage() {
               images={ticket?.images || []}
               title="Attachments"
             />
-
           )}
         </div>
 
