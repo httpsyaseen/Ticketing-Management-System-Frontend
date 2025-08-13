@@ -7,14 +7,20 @@ const nextConfig: NextConfig = {
         protocol: "http",
         hostname: "*",
       },
+      {
+        protocol: "https",
+        hostname: "*",
+      },
     ],
-    domains: [
-      "localhost",
-      "127.0.0.1",
-      "172.16.21.149",
-      "psba.gop.pk",
-      "0.0.0.0",
-    ],
+  },
+  async redirects() {
+    return [
+      {
+        source: "/",
+        destination: "/dashboard",
+        permanent: false, // Use temporary redirect
+      },
+    ];
   },
   reactStrictMode: true,
 };

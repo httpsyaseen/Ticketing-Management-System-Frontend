@@ -10,10 +10,10 @@ import {
 import nookies, { parseCookies, destroyCookie } from "nookies";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
-import toast from "react-hot-toast";
-import axios from "axios";
+import showError from "@/components/send-error";
 
 type User = {
+  _id: string;
   username: string;
   name: string;
   email: string;
@@ -52,24 +52,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      setIsLoading(true); // Ensure loading state is set to true at the start
+      setIsLoading(true);
       const { token } = parseCookies();
       if (token) {
         try {
           const { data } = await api.get(`/users/verify`);
           setUser(data.user);
           setIsAuthenticated(true);
+          // router.replace("/dashboard");
         } catch (error) {
-          if (axios.isAxiosError(error)) {
-            toast.error(error?.response?.data?.message);
-          }
+          showError(error);
           logout();
-        } finally {
-          setIsLoading(false);
         }
-      } else {
-        setIsLoading(false);
       }
+      setIsLoading(false);
     };
 
     checkAuth();
@@ -89,8 +85,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         maxAge: 7 * 24 * 60 * 60,
         path: "/",
       });
-
-      router.replace("/dashboard");
       setIsAuthenticated(true);
       setUser(data.data.user);
     } catch (error) {

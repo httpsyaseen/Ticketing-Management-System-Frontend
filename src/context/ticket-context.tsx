@@ -15,16 +15,14 @@ import { Ticket, Department } from "@/types/tickets";
 type TicketContextType = {
   departments: Department[];
   markets: Market[];
-  viewTicket: Ticket;
   myTickets: Ticket[];
   assignTickets: Ticket[];
   setDepartments: React.Dispatch<React.SetStateAction<Department[]>>;
-  setViewTicket: React.Dispatch<React.SetStateAction<Ticket>>;
   setMyTickets: React.Dispatch<React.SetStateAction<Ticket[]>>;
   setAssignTickets: React.Dispatch<React.SetStateAction<Ticket[]>>;
-  updateTicket: (ticket: Ticket) => void;
-  addTicket: (ticket: Ticket) => void;
-  getTicketById: (id: string) => Ticket | undefined;
+  addTicket?: (ticket: Ticket) => void;
+  viewTicket?: Ticket;
+  setViewTicket?: React.Dispatch<React.SetStateAction<Ticket>>;
 };
 
 type Market = {
@@ -38,8 +36,9 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [assignTickets, setAssignTickets] = useState<Ticket[]>([]);
   const [myTickets, setMyTickets] = useState<Ticket[]>([]);
-  const [viewTicket, setViewTicket] = useState<Ticket>({} as Ticket);
   const [markets, setMarkets] = useState<Market[]>([]);
+  const [viewTicket, setViewTicket] = useState<Ticket>({} as Ticket);
+
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
@@ -60,37 +59,23 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const addTicket = (ticket: Ticket) => {
-    setMyTickets((prev) => [...prev, ticket]);
-  };
-
-  const getTicketById = (id: string) => {
-    return myTickets.find((ticket) => ticket._id === id);
-  };
-
-  const updateTicket = (updated: Ticket) => {
-    setMyTickets((prev) =>
-      prev.map((ticket) => (ticket._id === updated._id ? updated : ticket))
-    );
-    if (viewTicket && viewTicket._id === updated._id) {
-      setViewTicket(updated);
-    }
+    setMyTickets((prev) => [ticket, ...prev]);
+    setAssignTickets((prev) => [ticket, ...prev]);
   };
 
   return (
     <TicketContext.Provider
       value={{
         departments,
-        viewTicket,
         myTickets,
         assignTickets,
         setDepartments,
-        setViewTicket,
         setMyTickets,
         setAssignTickets,
-        getTicketById,
-        updateTicket,
-        addTicket,
         markets,
+        addTicket,
+        viewTicket,
+        setViewTicket,
       }}
     >
       {children}

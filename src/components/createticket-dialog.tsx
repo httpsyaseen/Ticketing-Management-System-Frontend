@@ -40,7 +40,7 @@ export function CreateTicketDialog() {
   const [assignedTo, setAssignedTo] = useState<string>("");
 
   const { user } = useAuth();
-  const { departments, addTicket, markets } = useTicket();
+  const { departments, markets } = useTicket();
 
   useEffect(() => {
     if (user?.assignedToType === "Market") {
@@ -77,14 +77,12 @@ export function CreateTicketDialog() {
         formData.append("images", image);
       });
 
-      console.log(formData);
-
       const { data } = await api.post(`/ticket/create-ticket`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
-      addTicket(data.data.ticket);
+
       toast.success("Ticket created successfully!");
     } catch (error) {
       console.error("Error creating ticket:", error);

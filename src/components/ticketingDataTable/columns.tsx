@@ -64,9 +64,7 @@ export const getTicketColumns = (
     accessorKey: "priority",
     header: "Priority",
     cell: ({ row }) => (
-      <span className="capitalize">
-        {row.original.priority || "Not set yet"}
-      </span>
+      <span className="capitalize font-semibold">{row.original.priority}</span>
     ),
   },
 
@@ -77,8 +75,10 @@ export const getTicketColumns = (
       <Button
         variant="ghost"
         size="sm"
-        className="text-black-600 hover:text-black-800 hover:bg-black-50"
-        onClick={() => handleViewTicket(row.original)}
+        className="text-black-600 hover:text-black-800 hover:bg-black-50 cursor-pointer"
+        onClick={() => {
+          handleViewTicket(row.original);
+        }}
       >
         <Eye className="h-4 w-4 mr-1" /> View
       </Button>

@@ -34,7 +34,7 @@ export function ImageViewerDialog({
             width: "100%",
             minWidth: "500px",
             minHeight: "500px",
-            maxHeight: "50vh", // optional: keep it responsive
+            maxHeight: "50vh",
           }}
         >
           <Image

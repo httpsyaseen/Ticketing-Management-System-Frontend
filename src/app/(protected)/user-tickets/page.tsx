@@ -1,62 +1,61 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useAuth } from "@/context/auth-context";
-import { useTicket } from "@/context/ticket-context";
-import api from "@/lib/api";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/auth-context";
 import DashboardTabs from "@/components/DashboardTabs";
 import { DataTable } from "@/components/ticketingDataTable/DataTable";
 import { getTicketColumns } from "@/components/ticketingDataTable/columns";
+import api from "@/lib/api";
 import { Ticket } from "@/types/tickets";
 
 export default function TicketManagementPage() {
   const { user, isLoading } = useAuth();
-  const { setAssignTickets, assignTickets, setViewTicket } = useTicket();
+  const [tickets, setTickets] = useState<Ticket[]>([]);
   const router = useRouter();
+
   const [activeTab, setActiveTab] = useState("all");
   const [rowsPerPage, setRowsPerPage] = useState("10");
 
+  // Fetch tickets for the current user
   useEffect(() => {
     async function fetchTickets() {
       try {
-        const res = await api.get(`/ticket/${user?.assignedTo?._id}`);
+        const res = await api.get(`/ticket/getusertickets`);
         const data = res.data;
         if (data?.data?.tickets) {
-          setAssignTickets(data?.data?.tickets);
+          setTickets(data.data.tickets);
         }
       } catch (err) {
         console.error("Failed to fetch tickets:", err);
-      } finally {
       }
     }
 
-    if (!isLoading && user?.assignedTo?._id) {
+    if (!isLoading) {
       fetchTickets();
     }
-  }, [user, isLoading, setAssignTickets]);
+  }, [user, isLoading]);
 
-  // Filter tickets based on tab
   const filteredTickets = useMemo(() => {
-    if (activeTab === "all") return assignTickets;
+    if (activeTab === "all") return tickets;
 
-    return assignTickets.filter((ticket) => {
+    return tickets.filter((ticket) => {
       const status = ticket.status?.toLowerCase();
       if (activeTab === "resolved") {
         return status === "resolved" || status === "closed";
       }
       if (activeTab === "in-progress") {
-        return status === "in-progress"; // <-- fix here
+        return status === "in-progress";
       }
       return status === activeTab;
     });
-  }, [assignTickets, activeTab]);
+  }, [tickets, activeTab]);
 
   // Tab ticket counts
   const getTabCount = (status: string) => {
-    if (status === "all") return assignTickets.length;
+    if (status === "all") return tickets.length;
 
-    return assignTickets.filter((ticket) => {
+    return tickets.filter((ticket) => {
       const s = ticket.status?.toLowerCase();
       if (status === "resolved") return s === "resolved" || s === "closed";
       if (status === "in-progress") return s === "in-progress"; // <-- fix here
@@ -64,9 +63,9 @@ export default function TicketManagementPage() {
     }).length;
   };
 
+  // Handle view
   const handleViewTicket = (ticket: Ticket) => {
-    setViewTicket(ticket);
-    router.replace(`/ticketdetails/${ticket?.assignedTo?._id}`);
+    router.replace(`/ticketdetails/${ticket._id}`);
   };
 
   return (
@@ -78,6 +77,7 @@ export default function TicketManagementPage() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         getTabCount={getTabCount}
+        tabs={["all", "open", "in-progress", "resolved"]}
       />
       <DataTable
         columns={getTicketColumns(handleViewTicket)}

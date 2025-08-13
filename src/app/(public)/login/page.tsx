@@ -10,9 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/auth-context";
 import toast from "react-hot-toast";
-import axios from "axios";
 import Image from "next/image";
 import logo from "@/assets/logo.png";
+import showError from "@/components/send-error";
 export default function LoginPage() {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
@@ -30,13 +30,7 @@ export default function LoginPage() {
       router.replace("/dashboard");
       toast.success("Logged in Successfully.");
     } catch (err) {
-      let errorMessage = "Invalid Username or Password. Please try again.";
-      if (axios.isAxiosError(err)) {
-        errorMessage = err.response?.data?.message || errorMessage;
-      } else if (err instanceof Error) {
-        errorMessage = err.message;
-      }
-      toast.error(errorMessage);
+      showError(err);
     } finally {
       setIsLoading(false);
     }

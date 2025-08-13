@@ -15,7 +15,7 @@ import { CheckCircle } from "lucide-react";
 import { Dispatch, SetStateAction, useState } from "react";
 import { Ticket } from "@/types/tickets";
 import api from "@/lib/api";
-import { updateTicketInSessionStorage } from "@/utils/helper";
+import { setCurrentTicket } from "@/utils/helper";
 import toast from "react-hot-toast";
 
 type ResolveTicketDialogProps = {
@@ -39,8 +39,8 @@ export function ResolveTicketDialog({
         comment: resolveComment,
       });
       toast.success("Ticket resolved successfully.");
-      updateTicketInSessionStorage(data.data.ticket);
-      setTicket(data.data.ticket); // Update the ticket state in parent component
+      setCurrentTicket(data.data.ticket);
+      setTicket(data.data.ticket);
     } catch (error) {
       toast.error("Failed to resolve ticket. Please try again");
       console.error("Error resolving ticket:", error);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/select";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
-import { updateTicketInSessionStorage } from "@/utils/helper";
+import { setCurrentTicket } from "@/utils/helper";
 import { Ticket } from "@/types/tickets";
 
 type EstimateTimeDialogProps = {
@@ -48,34 +48,116 @@ export function EstimateTimeDialog({
   const [minute, setMinute] = useState<string>("");
   const [priority, setPriority] = useState<string>("");
 
-  const isFutureDate = date && hour !== "" && minute !== "";
+  const now = new Date();
+  const today = useMemo(
+    () => new Date(now.getFullYear(), now.getMonth(), now.getDate()),
+    []
+  );
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
+
+  // Check if selected date/time is in the future
+  const isValidDateTime = () => {
+    if (!date || hour === "" || minute === "") return false;
+
+    const selectedDateTime = new Date(date);
+    selectedDateTime.setHours(Number(hour), Number(minute), 0, 0);
+
+    return selectedDateTime > now;
+  };
+
+  // Get available hours based on selected date
+  const getAvailableHours = () => {
+    if (!date) return [];
+
+    const isToday = date.getTime() === today.getTime();
+    const hours = Array.from({ length: 24 }, (_, i) => i);
+
+    if (isToday) {
+      // If today, only show hours from current hour onwards
+      return hours.filter((hour) => hour >= currentHour);
+    }
+
+    return hours;
+  };
+
+  // Get available minutes based on selected date and hour
+  const getAvailableMinutes = () => {
+    if (!date || hour === "") return ["00", "15", "30", "45"];
+
+    const isToday = date.getTime() === today.getTime();
+    const selectedHour = Number(hour);
+    const allMinutes = ["00", "15", "30", "45"];
+
+    if (isToday && selectedHour === currentHour) {
+      // If today and current hour, only show minutes after current minute
+      return allMinutes.filter((min) => Number(min) > currentMinute);
+    }
+
+    return allMinutes;
+  };
+
+  // Reset hour and minute when date changes to today and current selections are invalid
+  useEffect(() => {
+    if (date) {
+      const isToday = date.getTime() === today.getTime();
+
+      if (isToday) {
+        // If date is today and selected hour is in the past, reset hour
+        if (hour !== "" && Number(hour) < currentHour) {
+          setHour("");
+          setMinute("");
+        }
+        // If hour is current hour and selected minute is in the past, reset minute
+        else if (
+          hour !== "" &&
+          Number(hour) === currentHour &&
+          minute !== "" &&
+          Number(minute) <= currentMinute
+        ) {
+          setMinute("");
+        }
+      }
+    }
+  }, [date, hour, minute, currentHour, currentMinute, today]);
+
+  // Reset form when dialog opens
+  useEffect(() => {
+    if (open) {
+      setDate(null);
+      setHour("");
+      setMinute("");
+      setPriority("");
+    }
+  }, [open]);
 
   const handleSet = async () => {
-    if (!date) return;
+    if (!isValidDateTime()) return;
 
-    const fullDate = new Date(date);
+    const fullDate = new Date(date!);
     fullDate.setHours(Number(hour), Number(minute), 0, 0);
 
-    if (fullDate > new Date()) {
-      const payload = {
-        estimatedResolutionTime: fullDate.toISOString(),
-        priority: priority || "medium",
-      };
+    const payload = {
+      estimatedResolutionTime: fullDate.toISOString(),
+      priority: priority || "medium",
+    };
 
-      try {
-        console.log("🔼 Sending to API:", payload); 
-        const { data } = await api.patch(`/ticket/set-time/${ticketId}`, payload);
-        toast.success("Estimated resolution time set successfully.");
-        updateTicketInSessionStorage(data.data.ticket);
-        setTicket(data.data.ticket);
-      } catch (error) {
-        toast.error("Failed to set estimated resolution time.");
-        console.error("❌ Error setting estimated resolution time:", error);
-      }
+    try {
+      console.log("🔼 Sending to API:", payload);
+      const { data } = await api.patch(`/ticket/set-time/${ticketId}`, payload);
+      toast.success("Estimated resolution time set successfully.");
 
+      setTicket(data.data.ticket);
       onOpenChange(false);
+      setCurrentTicket(data.data.ticket);
+    } catch (error) {
+      toast.error("Failed to set estimated resolution time.");
+      console.error("❌ Error setting estimated resolution time:", error);
     }
   };
+
+  const availableHours = getAvailableHours();
+  const availableMinutes = getAvailableMinutes();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -105,8 +187,15 @@ export function EstimateTimeDialog({
                 <Calendar
                   mode="single"
                   selected={date ?? undefined}
-                  onSelect={(d) => d && d > new Date() && setDate(d)}
-                  disabled={(d) => d < new Date()}
+                  onSelect={(d) => {
+                    if (d && d >= today) {
+                      setDate(d);
+                      // Reset hour and minute when date changes
+                      setHour("");
+                      setMinute("");
+                    }
+                  }}
+                  disabled={(d) => d < today}
                 />
               </PopoverContent>
             </Popover>
@@ -116,14 +205,20 @@ export function EstimateTimeDialog({
           <div className="flex gap-4">
             <div className="w-1/2">
               <Label className="py-2">Hour</Label>
-              <Select onValueChange={setHour}>
+              <Select
+                value={hour}
+                onValueChange={(value) => {
+                  setHour(value);
+                  setMinute(""); // Reset minute when hour changes
+                }}
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Hour" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Array.from({ length: 24 }, (_, i) => (
-                    <SelectItem key={i} value={String(i).padStart(2, "0")}>
-                      {String(i).padStart(2, "0")}
+                  {availableHours.map((h) => (
+                    <SelectItem key={h} value={String(h).padStart(2, "0")}>
+                      {String(h).padStart(2, "0")}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -131,12 +226,12 @@ export function EstimateTimeDialog({
             </div>
             <div className="w-1/2">
               <Label className="py-2">Minute</Label>
-              <Select onValueChange={setMinute}>
+              <Select value={minute} onValueChange={setMinute} disabled={!hour}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Minute" />
                 </SelectTrigger>
                 <SelectContent>
-                  {["00", "15", "30", "45"].map((m) => (
+                  {availableMinutes.map((m) => (
                     <SelectItem key={m} value={m}>
                       {m}
                     </SelectItem>
@@ -149,7 +244,7 @@ export function EstimateTimeDialog({
           {/* Priority Select */}
           <div>
             <Label className="py-2">Priority</Label>
-            <Select onValueChange={setPriority}>
+            <Select value={priority} onValueChange={setPriority}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select priority" />
               </SelectTrigger>
@@ -167,9 +262,9 @@ export function EstimateTimeDialog({
             Cancel
           </Button>
           <Button
-            disabled={!isFutureDate}
+            disabled={!isValidDateTime()}
             onClick={handleSet}
-            className="bg-black hover:bg-black text-white"
+            className="bg-green-600 hover:bg-green-700 text-white"
           >
             <Clock className="h-4 w-4 mr-2" />
             Set Time

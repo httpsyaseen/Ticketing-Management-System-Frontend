@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -127,6 +128,7 @@ export function DataTable<TData, TValue>({
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
+            <ArrowLeft />
             Previous
           </Button>
           <Button
@@ -136,6 +138,7 @@ export function DataTable<TData, TValue>({
             disabled={!table.getCanNextPage()}
           >
             Next
+            <ArrowRight />
           </Button>
         </div>
       </div>

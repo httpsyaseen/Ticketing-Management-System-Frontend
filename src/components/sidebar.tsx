@@ -37,7 +37,6 @@ const navItems = [
     icon: ChartAreaIcon,
     url: "/reports",
   },
- 
 
   {
     title: "Users",
@@ -100,7 +99,10 @@ export default function AppSidebar() {
                 }
                 return (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={pathname === item.url}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname.includes(item.url)}
+                    >
                       <Link href={item.url}>
                         <item.icon />
                         <span className="text-base">{item.title}</span>
