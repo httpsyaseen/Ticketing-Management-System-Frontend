@@ -41,7 +41,7 @@ const navItems = [
   {
     title: "Users",
     icon: Users,
-    url: "/users",
+    url: "/user-management",
   },
   // {
   //   title: "Settings",
