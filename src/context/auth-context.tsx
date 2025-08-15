@@ -21,6 +21,7 @@ type User = {
   assignedTo: {
     _id: string;
     name: string;
+    currentReport?: string;
   };
   assignedToType: "Market" | "Department";
   role: "admin" | "user" | "superadmin";

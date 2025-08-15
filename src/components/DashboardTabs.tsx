@@ -3,6 +3,7 @@
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CreateTicketDialog } from "@/components/createticket-dialog";
+import { SecurityReportDialog } from "./security-report-dialog";
 
 export default function DashboardTabs({
   activeTab,
@@ -22,7 +23,10 @@ export default function DashboardTabs({
             Resolved ({getTabCount("resolved")})
           </TabsTrigger>
         </TabsList>
-        <CreateTicketDialog />
+        <div className="flex gap-2">
+          <SecurityReportDialog />
+          <CreateTicketDialog />
+        </div>
       </div>
     </Tabs>
   );

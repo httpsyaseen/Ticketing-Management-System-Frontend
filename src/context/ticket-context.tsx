@@ -28,6 +28,7 @@ type TicketContextType = {
 type Market = {
   _id: string;
   name: string;
+  currentReport?: string;
 };
 
 const TicketContext = createContext<TicketContextType>({} as TicketContextType);

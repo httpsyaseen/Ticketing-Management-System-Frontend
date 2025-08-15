@@ -77,7 +77,7 @@ export function CreateTicketDialog() {
         formData.append("images", image);
       });
 
-      const { data } = await api.post(`/ticket/create-ticket`, formData, {
+      await api.post(`/ticket/create-ticket`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

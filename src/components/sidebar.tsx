@@ -1,7 +1,13 @@
 "use client";
 
 import type * as React from "react";
-import { Ticket, BarChart3, ChartAreaIcon, Users } from "lucide-react";
+import {
+  Ticket,
+  BarChart3,
+  ChartAreaIcon,
+  Users,
+  FolderClosed,
+} from "lucide-react";
 
 import {
   Sidebar,
@@ -26,28 +32,34 @@ const navItems = [
     title: "Dashboard",
     icon: BarChart3,
     url: "/dashboard",
+    superAdminOnly: false,
   },
   {
     title: "Your Tickets",
     icon: Ticket,
     url: "/user-tickets",
+    superAdminOnly: false,
+  },
+
+  {
+    title: "Closed Tickets",
+    icon: FolderClosed,
+    url: "/closed-tickets",
+    superAdminOnly: false,
   },
   {
     title: "Reports and Analytics",
     icon: ChartAreaIcon,
     url: "/reports",
+    superAdminOnly: true,
   },
 
   {
     title: "Users",
     icon: Users,
     url: "/users",
+    superAdminOnly: true,
   },
-  // {
-  //   title: "Settings",
-  //   icon: Settings,
-  //   url: "/settings",
-  // },
 ];
 
 export default function AppSidebar() {
@@ -94,7 +106,7 @@ export default function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu className="mt-5">
               {navItems.map((item) => {
-                if (item.title === "Users" && user?.role !== "superadmin") {
+                if (item.superAdminOnly && user?.role !== "superadmin") {
                   return null;
                 }
                 return (

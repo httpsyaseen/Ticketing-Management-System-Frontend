@@ -80,7 +80,7 @@ export default function ReferTicketDialog({
   };
 
   // Only show the button if ticket status is not resolved
-  if (ticket.status === "resolved") {
+  if (ticket.status === "resolved" || ticket.status === "closed") {
     return null;
   }
 

@@ -29,7 +29,6 @@ export default function TicketingDetailPage() {
   const [ticket, setTicket] = useState<Ticket>({} as Ticket);
   const [isLoading, setIsLoading] = useState(true);
   const [newComment, setNewComment] = useState("");
-
   const [showResolveDialog, setShowResolveDialog] = useState(false);
   const [showEstimateDialog, setShowEstimateDialog] = useState(false);
 
@@ -94,9 +93,8 @@ export default function TicketingDetailPage() {
             )}
           {ticket.createdBy?._id !== user?._id && (
             <div className="flex gap-2">
-              {ticket.status !== "resolved" && (
-                <ReferTicketDialog ticket={ticket} setTicket={setTicket} />
-              )}
+              <ReferTicketDialog ticket={ticket} setTicket={setTicket} />
+
               {ticket?.status === "open" &&
                 ticket?.assignedTo?._id === user?.assignedTo?._id && (
                   <Button
