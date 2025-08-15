@@ -18,6 +18,7 @@ type TicketContextType = {
   myTickets: Ticket[];
   assignTickets: Ticket[];
   setDepartments: React.Dispatch<React.SetStateAction<Department[]>>;
+  setMarkets: React.Dispatch<React.SetStateAction<Market[]>>;
   setMyTickets: React.Dispatch<React.SetStateAction<Ticket[]>>;
   setAssignTickets: React.Dispatch<React.SetStateAction<Ticket[]>>;
   addTicket?: (ticket: Ticket) => void;
@@ -77,6 +78,7 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
         addTicket,
         viewTicket,
         setViewTicket,
+        setMarkets,
       }}
     >
       {children}
