@@ -17,10 +17,13 @@ export function getStatusBadge(status: string) {
         </Badge>
       );
     case "resolved":
+      <Badge className="bg-green-100 text-sm text-green-700 border-green-200 hover:bg-green-100 px-1.5  border-2 rounded-3xl">
+          Resolved
+        </Badge>
     case "closed":
       return (
-        <Badge className="bg-green-100 text-sm text-green-700 border-green-200 hover:bg-green-100 px-1.5  border-2 rounded-3xl">
-          Resolved
+        <Badge className="bg-blue-100 text-sm text-blue-700 border-blue-200 hover:bg-blue-100 px-1.5  border-2 rounded-3xl">
+          Closed
         </Badge>
       );
     default:

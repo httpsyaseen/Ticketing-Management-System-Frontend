@@ -31,7 +31,7 @@ export function Combobox({
   const [search, setSearch] = React.useState("");
 
   const filtered = options.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
+    item?.name?.toLowerCase().includes(search?.toLowerCase())
   );
 
   const selected = options.find((item) => item._id === value);

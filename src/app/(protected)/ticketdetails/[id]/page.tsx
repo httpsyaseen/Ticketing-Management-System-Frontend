@@ -108,7 +108,7 @@ export default function TicketingDetailPage() {
           </div>
         </div>
         <div className="flex items-center gap-4">
-          {ticket.createdBy._id === user?._id &&
+          {ticket?.createdBy?._id === user?._id &&
             ticket?.status === "resolved" && (
               <CloseTicketDialog ticket={ticket} setTicket={setTicket} />
             )}

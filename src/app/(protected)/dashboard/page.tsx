@@ -76,6 +76,7 @@ export default function TicketManagementPage() {
         getTabCount={getTabCount}
       />
       <DataTable
+      className="bg-white"
         columns={getTicketColumns(handleViewTicket)}
         data={filteredTickets}
         rowsPerPage={rowsPerPage}

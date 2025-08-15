@@ -41,3 +41,10 @@ export type Ticket = {
   }[];
   // __v: number;
 };
+
+
+export interface GetTicketsByDateAndTypeRequest {
+  startDate: string
+  endDate: string
+  ticketType: "created" | "assigned"
+}

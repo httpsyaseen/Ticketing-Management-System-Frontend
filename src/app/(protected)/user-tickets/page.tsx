@@ -1,89 +1,200 @@
 "use client";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
+import {
+  CheckCircle,
+  MessageSquare,
+  Paperclip,
+  Send,
+  User,
+  CalendarDays,
+  FileText,
+  ImageIcon,
+  Info,
+  ListChecks,
+  Tag,
+  UserCheck,
+  Play,
+  FlagTriangleRight,
+} from "lucide-react";
 
-import { useState, useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/auth-context";
-import DashboardTabs from "@/components/DashboardTabs";
-import { DataTable } from "@/components/ticketingDataTable/DataTable";
-import { getTicketColumns } from "@/components/ticketingDataTable/columns";
-import api from "@/lib/api";
+import { useEffect, useState } from "react";
 import { Ticket } from "@/types/tickets";
+import { useParams } from "next/navigation";
+import ReferTicketDialog from "@/components/referdepartment-dialog";
+import { ResolveTicketDialog } from "@/components/resolveticket-dialog";
+import { EstimateTimeDialog } from "@/components/estimatetime-dialog";
 
-export default function TicketManagementPage() {
-  const { user, isLoading } = useAuth();
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const router = useRouter();
+import toast from "react-hot-toast";
+import api from "@/lib/api";
+import { useAuth } from "@/context/auth-context";
+import { getStatusBadge } from "@/components/helper-components";
+import { Timer } from "@/components/timer";
+import { formatTime } from "@/utils/helper";
+import { StatusTimeline } from "@/components/status-timeline";
+import { ImageViewerDialog } from "@/components/image-viewer-dialog";
+import { CloseTicketDialog } from "@/components/close-ticket-dialog";
+import showError from "@/components/send-error";
+import TicketDetailComment from "@/components/TicketDetailComment";
+import TicketDetailDescription from "@/components/TicketDetailDescription";
+import TicketDetailsSection from "@/components/TicketDetailsSection";
+import TicketDetailImageSection from "@/components/TicketDetailImageSection";
 
-  const [activeTab, setActiveTab] = useState("all");
-  const [rowsPerPage, setRowsPerPage] = useState("10");
+export default function TicketingDetailPage() {
+  const params = useParams();
+  const [ticket, setTicket] = useState<Ticket>({} as Ticket);
+  const [isLoading, setIsLoading] = useState(true);
+  const [newComment, setNewComment] = useState("");
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [showResolveDialog, setShowResolveDialog] = useState(false);
+  const [showEstimateDialog, setShowEstimateDialog] = useState(false);
 
-  // Fetch tickets for the current user
+  const { user } = useAuth();
+
   useEffect(() => {
-    async function fetchTickets() {
+    async function getTicket() {
       try {
-        const res = await api.get(`/ticket/getusertickets`);
-        const data = res.data;
-        if (data?.data?.tickets) {
-          setTickets(data.data.tickets);
-        }
+        const { data } = await api.get(`/ticket/get-ticket/${params.id}`);
+        setTicket(data.data.ticket);
       } catch (err) {
-        console.error("Failed to fetch tickets:", err);
+        showError(err);
+      } finally {
+        setIsLoading(false);
       }
     }
+    getTicket();
+  }, [params.id]);
 
-    if (!isLoading) {
-      fetchTickets();
+  const handleStartProgress = () => {
+    setShowEstimateDialog(true);
+  };
+
+  const handleAddComment = async () => {
+    try {
+      if (!newComment.trim()) return;
+
+      const { data } = await api.patch(`/ticket/add-comment/${ticket._id}`, {
+        comment: newComment,
+      });
+
+      // Make sure we're using the complete updated ticket with populated comments
+      setTicket(data.data.ticket);
+      setNewComment("");
+      toast.success("Comment added successfully.");
+    } catch (error) {
+      toast.error("Failed to add comment. Please try again.");
+      console.error("Error adding comment:", error);
     }
-  }, [user, isLoading]);
-
-  const filteredTickets = useMemo(() => {
-    if (activeTab === "all") return tickets;
-
-    return tickets.filter((ticket) => {
-      const status = ticket.status?.toLowerCase();
-      if (activeTab === "resolved") {
-        return status === "resolved" || status === "closed";
-      }
-      if (activeTab === "in-progress") {
-        return status === "in-progress";
-      }
-      return status === activeTab;
-    });
-  }, [tickets, activeTab]);
-
-  // Tab ticket counts
-  const getTabCount = (status: string) => {
-    if (status === "all") return tickets.length;
-
-    return tickets.filter((ticket) => {
-      const s = ticket.status?.toLowerCase();
-      if (status === "resolved") return s === "resolved" || s === "closed";
-      if (status === "in-progress") return s === "in-progress"; // <-- fix here
-      return s === status;
-    }).length;
   };
 
-  // Handle view
-  const handleViewTicket = (ticket: Ticket) => {
-    router.replace(`/ticketdetails/${ticket._id}`);
-  };
+  if (isLoading) {
+    return <>Loading....</>;
+  }
 
   return (
-    <div className="flex bg-gray-50 flex-1 flex-col gap-4 p-4">
-      <h1 className="text-3xl  mx-10  font-extrabold">
-        {user?.assignedTo?.name}
-      </h1>
-      <DashboardTabs
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        getTabCount={getTabCount}
-        tabs={["all", "open", "in-progress", "resolved"]}
+    <div className="min-h-screen p-5 bg-gray-50 font-sans flex flex-col px-8">
+      <header className="mt-5 flex justify-between items-center w-full rounded-xl border border-gray-300 p-4 shadow-sm hover:shadow-md transition-shadow duration-300 bg-white px-4">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
+            <div className="flex flex-row gap-2 items-center">
+              <h1 className="text-2xl font-bold text-gray-900 leading-tight">
+                {ticket?.title}
+              </h1>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          {ticket?.createdBy?._id === user?._id &&
+            ticket?.status === "resolved" && (
+              <CloseTicketDialog ticket={ticket} setTicket={setTicket} />
+            )}
+          {ticket.createdBy?._id !== user?._id && (
+            <div className="flex gap-2">
+              {ticket.status !== "resolved" && (
+                <ReferTicketDialog ticket={ticket} setTicket={setTicket} />
+              )}
+              {ticket?.status === "open" &&
+                ticket?.assignedTo?._id === user?.assignedTo?._id && (
+                  <Button
+                    onClick={handleStartProgress}
+                    size="sm"
+                    className="bg-green-600 hover:bg-green-700 text-white shadow-sm hover:shadow-md transition cursor-pointer"
+                  >
+                    <Play className="h-4 w-4 mr-2" />
+                    Accept Ticket
+                  </Button>
+                )}
+              {ticket?.status === "in-progress" && (
+                <Button
+                  onClick={() => setShowResolveDialog(true)}
+                  size="sm"
+                  className="bg-green-600 hover:bg-green-700 text-white shadow-sm hover:shadow-md transition"
+                >
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Mark as Resolved
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+      </header>
+      <div className="flex-1 grid grid-cols-2 lg:grid-cols-3 gap-6 md:py-4  w-full">
+        <div className="lg:col-span-2 space-y-6">
+          <TicketDetailsSection
+            ticket={ticket}
+            formatTime={formatTime}
+          />
+
+          <TicketDetailDescription description={ticket.description} />
+
+          {ticket?.images?.length > 0 && (
+            <TicketDetailImageSection
+              images={ticket?.images || []}
+              title="Attachments"
+            />
+
+          )}
+        </div>
+
+        <div className="lg:col-span-1.5 space-y-6">
+          <Card className="rounded-xl border border-gray-200 shadow-lg bg-white overflow-hidden transition-all duration-200 hover:shadow-xl p-1 gap-1">
+            <CardHeader className="bg-white px-4">
+              <CardTitle className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <ListChecks className="w-5 h-5 text-green-600" />
+                Status History
+              </CardTitle>
+            </CardHeader>
+            <div className="px-4">
+              <StatusTimeline ticket={ticket} />
+            </div>
+          </Card>
+
+          <TicketDetailComment
+            ticket={ticket}
+            newComment={newComment}
+            setNewComment={setNewComment}
+            handleAddComment={handleAddComment}
+            formatTime={formatTime}
+          />
+        </div>
+      </div>
+
+      <EstimateTimeDialog
+        open={showEstimateDialog}
+        onOpenChange={setShowEstimateDialog}
+        setTicket={setTicket}
+        ticketId={ticket._id}
       />
-      <DataTable
-        columns={getTicketColumns(handleViewTicket)}
-        data={filteredTickets}
-        rowsPerPage={rowsPerPage}
-        setRowsPerPage={setRowsPerPage}
+
+      <ResolveTicketDialog
+        open={showResolveDialog}
+        setOpen={setShowResolveDialog}
+        setTicket={setTicket}
+        ticketId={ticket._id}
       />
     </div>
   );

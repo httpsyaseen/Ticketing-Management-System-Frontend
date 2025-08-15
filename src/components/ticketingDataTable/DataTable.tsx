@@ -30,6 +30,7 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   rowsPerPage: string;
+  className:string;
   setRowsPerPage: (value: string) => void;
 }
 
@@ -38,6 +39,7 @@ export function DataTable<TData, TValue>({
   data,
   rowsPerPage,
   setRowsPerPage,
+  className
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -53,7 +55,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      <div className="rounded-md border bg-white mx-10">
+      <div className={`rounded-md border ${className}  mx-10`}>
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -110,7 +112,7 @@ export function DataTable<TData, TValue>({
               table.setPageSize(Number(value));
             }}
           >
-            <SelectTrigger className="w-20">
+            <SelectTrigger className="w-20 bg-white">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

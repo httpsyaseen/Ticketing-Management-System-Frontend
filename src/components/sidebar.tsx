@@ -39,6 +39,12 @@ const navItems = [
   },
 
   {
+    title: "Close Ticket",
+    icon: ChartAreaIcon,
+    url: "/closeticket",
+  },
+
+  {
     title: "Users",
     icon: Users,
     url: "/users",
