@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as Select from "@radix-ui/react-select";
 import * as Accordion from "@radix-ui/react-accordion";
@@ -14,10 +14,10 @@ import {
   LockClosedIcon,
   EnvelopeClosedIcon,
   GlobeIcon,
-  DashboardIcon,
   CheckIcon,
   MixerHorizontalIcon,
-  AvatarIcon
+  AvatarIcon,
+  MagnifyingGlassIcon
 } from "@radix-ui/react-icons";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-hot-toast";
@@ -52,14 +52,13 @@ export default function UserManagementSystem() {
   const { user } = useAuth();
   const { departments, markets, setDepartments, setMarkets } = useTicket();
   const [users, setUsers] = useState<User[]>([]);
-  const [openDialog, setOpenDialog] = useState<"department" | "market" | "user" | "edit" | null>(null);
+  const [openDialog, setOpenDialog] = useState<"user" | "edit" | null>(null);
   const [editUser, setEditUser] = useState<User | null>(null);
   const [deptName, setDeptName] = useState("");
   const [marketName, setMarketName] = useState("");
   const [userName, setUserName] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const [userPassword, setUserPassword] = useState("");
-  const [userRole, setUserRole] = useState("user");
   const [assignedToType, setAssignedToType] = useState<"Department" | "Market">("Department");
   const [assignedTo, setAssignedTo] = useState("");
   const [accordionValue, setAccordionValue] = useState<string[]>(["users"]);
@@ -67,6 +66,8 @@ export default function UserManagementSystem() {
   const [formSubmitting, setFormSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [creatingNewEntity, setCreatingNewEntity] = useState<"department" | "market" | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const deleteTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch data from backend
@@ -109,7 +110,7 @@ export default function UserManagementSystem() {
       const { data } = await api.post("department/create-department", { name: deptName });
       setDepartments([...departments, data.data]);
       setDeptName("");
-      setOpenDialog(null);
+      setCreatingNewEntity(null);
       toast.success("Department created successfully!");
     } catch (error: any) {
       const message = error.response?.data?.message || "Failed to create department";
@@ -127,7 +128,7 @@ export default function UserManagementSystem() {
       const { data } = await api.post("market/create-market", { name: marketName });
       setMarkets([...markets, data.data]);
       setMarketName("");
-      setOpenDialog(null);
+      setCreatingNewEntity(null);
       toast.success("Market created successfully!");
     } catch (error: any) {
       const message = error.response?.data?.message || "Failed to create market";
@@ -147,7 +148,7 @@ export default function UserManagementSystem() {
         name: userName,
         email: userEmail,
         password: userPassword,
-        role: userRole,
+        role: assignedToType === "Department" ? "department_admin" : "market_admin",
         assignedToType,
         assignedTo,
       });
@@ -175,7 +176,7 @@ export default function UserManagementSystem() {
       const { data } = await api.patch(`/users/updateuser/${editUser._id}`, {
         name: userName,
         email: userEmail,
-        role: userRole,
+        role: assignedToType === "Department" ? "department_admin" : "market_admin",
         password: userPassword || undefined,
         assignedToType,
         assignedTo,
@@ -227,24 +228,38 @@ export default function UserManagementSystem() {
     setUserName("");
     setUserEmail("");
     setUserPassword("");
-    setUserRole("user");
     setAssignedToType("Department");
     setAssignedTo("");
     setEditUser(null);
     setShowPassword(false);
     setFormSubmitting(false);
+    setCreatingNewEntity(null);
+    setSearchTerm("");
   };
 
   const openEditDialog = (user: User) => {
     setEditUser(user);
     setUserName(user.name);
     setUserEmail(user.email);
-    setUserRole(user.role);
-    setUserPassword("");
     setAssignedToType(user.assignedToType);
     setAssignedTo(user.assignedTo._id);
     setOpenDialog("edit");
   };
+
+  // Filter departments and markets based on search term
+  const filteredDepartments = useMemo(() => {
+    if (!searchTerm) return departments;
+    return departments.filter(dept => 
+      dept.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [departments, searchTerm]);
+
+  const filteredMarkets = useMemo(() => {
+    if (!searchTerm) return markets;
+    return markets.filter(market => 
+      market.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [markets, searchTerm]);
 
   if (loading) {
     return (
@@ -315,142 +330,20 @@ export default function UserManagementSystem() {
         </motion.p>
       </motion.div>
 
-      {/* Action Buttons */}
+      {/* Action Button */}
       <motion.div 
-        className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"
+        className="mb-8 flex justify-center"
         variants={stagger}
         initial="hidden"
         animate="visible"
       >
-        <motion.div variants={fadeIn}>
-          <Dialog.Root open={openDialog === "department"} onOpenChange={open => !open && setOpenDialog(null)}>
-            <Dialog.Trigger asChild>
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 px-6 rounded-xl shadow-md flex items-center justify-center gap-2"
-                onClick={() => setOpenDialog("department")}
-              >
-                <PlusIcon />
-                Create Department
-              </motion.button>
-            </Dialog.Trigger>
-            
-            <Dialog.Portal>
-              <Dialog.Overlay className="bg-black/60 fixed inset-0 backdrop-blur-sm" />
-              <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
-                <div className="flex justify-between items-center mb-4">
-                  <Dialog.Title className="text-xl font-semibold">Create Department</Dialog.Title>
-                  <Dialog.Close asChild>
-                    <button className="text-gray-500 hover:text-gray-700 rounded-full p-1 hover:bg-gray-100">
-                      <Cross2Icon className="w-5 h-5" />
-                    </button>
-                  </Dialog.Close>
-                </div>
-                
-                <Dialog.Description className="mb-4 text-gray-600">
-                  Add a new department to your organization
-                </Dialog.Description>
-                
-                <div className="mb-6">
-                  <label className="block text-sm font-medium mb-2 text-gray-700" htmlFor="deptName">
-                    Department Name
-                  </label>
-                  <input
-                    id="deptName"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    value={deptName}
-                    onChange={e => setDeptName(e.target.value)}
-                    placeholder="Enter department name"
-                  />
-                </div>
-                
-                <div className="flex justify-end gap-3">
-                  <Dialog.Close asChild>
-                    <button className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium">
-                      Cancel
-                    </button>
-                  </Dialog.Close>
-                  <button 
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700"
-                    onClick={handleCreateDepartment}
-                  >
-                    Create
-                  </button>
-                </div>
-              </Dialog.Content>
-            </Dialog.Portal>
-          </Dialog.Root>
-        </motion.div>
-        
-        <motion.div variants={fadeIn}>
-          <Dialog.Root open={openDialog === "market"} onOpenChange={open => !open && setOpenDialog(null)}>
-            <Dialog.Trigger asChild>
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full bg-teal-600 hover:bg-teal-700 text-white py-4 px-6 rounded-xl shadow-md flex items-center justify-center gap-2"
-                onClick={() => setOpenDialog("market")}
-              >
-                <PlusIcon />
-                Create Market
-              </motion.button>
-            </Dialog.Trigger>
-            
-            <Dialog.Portal>
-              <Dialog.Overlay className="bg-black/60 fixed inset-0 backdrop-blur-sm" />
-              <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
-                <div className="flex justify-between items-center mb-4">
-                  <Dialog.Title className="text-xl font-semibold">Create Market</Dialog.Title>
-                  <Dialog.Close asChild>
-                    <button className="text-gray-500 hover:text-gray-700 rounded-full p-1 hover:bg-gray-100">
-                      <Cross2Icon className="w-5 h-5" />
-                    </button>
-                  </Dialog.Close>
-                </div>
-                
-                <Dialog.Description className="mb-4 text-gray-600">
-                  Add a new market to your organization
-                </Dialog.Description>
-                
-                <div className="mb-6">
-                  <label className="block text-sm font-medium mb-2 text-gray-700" htmlFor="marketName">
-                    Market Name
-                  </label>
-                  <input
-                    id="marketName"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    value={marketName}
-                    onChange={e => setMarketName(e.target.value)}
-                    placeholder="Enter market name"
-                  />
-                </div>
-                
-                <div className="flex justify-end gap-3">
-                  <Dialog.Close asChild>
-                    <button className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium">
-                      Cancel
-                    </button>
-                  </Dialog.Close>
-                  <button 
-                    className="px-4 py-2 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700"
-                    onClick={handleCreateMarket}
-                  >
-                    Create
-                  </button>
-                </div>
-              </Dialog.Content>
-            </Dialog.Portal>
-          </Dialog.Root>
-        </motion.div>
-        
         <motion.div variants={fadeIn}>
           <Dialog.Root open={openDialog === "user" || openDialog === "edit"} onOpenChange={open => !open && setOpenDialog(null)}>
             <Dialog.Trigger asChild>
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 px-6 rounded-xl shadow-md flex items-center justify-center gap-2"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white py-4 px-8 rounded-xl shadow-md flex items-center justify-center gap-2"
                 onClick={() => {
                   resetUserForm();
                   setOpenDialog("user");
@@ -463,7 +356,7 @@ export default function UserManagementSystem() {
             
             <Dialog.Portal>
               <Dialog.Overlay className="bg-black/60 fixed inset-0 backdrop-blur-sm" />
-              <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
                 <div className="flex justify-between items-center mb-6">
                   <div>
                     <Dialog.Title className="text-2xl font-bold text-gray-800">
@@ -482,7 +375,7 @@ export default function UserManagementSystem() {
                   </Dialog.Close>
                 </div>
                 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6">
                   {/* Personal Information */}
                   <div className="bg-gray-50 p-5 rounded-xl border border-gray-200">
                     <h3 className="text-lg font-semibold text-gray-800 mb-5 flex items-center">
@@ -490,7 +383,7 @@ export default function UserManagementSystem() {
                       Personal Information
                     </h3>
                     
-                    <div className="space-y-5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div>
                         <label className="block text-sm font-medium mb-2 text-gray-700" htmlFor="userName">
                           Full Name
@@ -523,7 +416,7 @@ export default function UserManagementSystem() {
                         </div>
                       </div>
                       
-                      <div>
+                      <div className="md:col-span-2">
                         <label className="block text-sm font-medium mb-2 text-gray-700" htmlFor="userPassword">
                           Password
                           {openDialog === "edit" && (
@@ -559,7 +452,7 @@ export default function UserManagementSystem() {
                     </div>
                   </div>
                   
-                  {/* Role & Assignment */}
+                  {/* Assignment Section */}
                   <div className="bg-gray-50 p-5 rounded-xl border border-gray-200">
                     <h3 className="text-lg font-semibold text-gray-800 mb-5 flex items-center">
                       <MixerHorizontalIcon className="w-5 h-5 mr-2 text-indigo-500" />
@@ -567,70 +460,15 @@ export default function UserManagementSystem() {
                     </h3>
                     
                     <div className="space-y-5">
-                      <div>
-                        <label className="block text-sm font-medium mb-2 text-gray-700">
-                          User Role
-                        </label>
-                        <div className="grid grid-cols-3 gap-3">
-                          <button
-                            type="button"
-                            className={`p-3 rounded-xl border transition-all flex flex-col items-center ${
-                              userRole === "superadmin"
-                                ? "border-blue-500 bg-blue-50 shadow-inner"
-                                : "border-gray-200 hover:border-gray-300"
-                            }`}
-                            onClick={() => setUserRole("superadmin")}
-                          >
-                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mb-2">
-                              <DashboardIcon className="w-4 h-4 text-blue-600" />
-                            </div>
-                            <span className="font-medium text-sm">Super Admin</span>
-                            <span className="text-xs text-gray-500 mt-1">Full access</span>
-                          </button>
-                          
-                          <button
-                            type="button"
-                            className={`p-3 rounded-xl border transition-all flex flex-col items-center ${
-                              userRole === "admin"
-                                ? "border-indigo-500 bg-indigo-50 shadow-inner"
-                                : "border-gray-200 hover:border-gray-300"
-                            }`}
-                            onClick={() => setUserRole("admin")}
-                          >
-                            <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center mb-2">
-                              <AvatarIcon className="w-4 h-4 text-indigo-600" />
-                            </div>
-                            <span className="font-medium text-sm">Admin</span>
-                            <span className="text-xs text-gray-500 mt-1">Elevated access</span>
-                          </button>
-                          
-                          <button
-                            type="button"
-                            className={`p-3 rounded-xl border transition-all flex flex-col items-center ${
-                              userRole === "user"
-                                ? "border-gray-500 bg-gray-50 shadow-inner"
-                                : "border-gray-200 hover:border-gray-300"
-                            }`}
-                            onClick={() => setUserRole("user")}
-                          >
-                            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center mb-2">
-                              <PersonIcon className="w-4 h-4 text-gray-600" />
-                            </div>
-                            <span className="font-medium text-sm">Standard</span>
-                            <span className="text-xs text-gray-500 mt-1">Limited access</span>
-                          </button>
-                        </div>
-                      </div>
-                      
                       <div className="space-y-4">
                         <div>
                           <label className="block text-sm font-medium mb-2 text-gray-700">
                             Assignment Type
                           </label>
-                          <div className="grid grid-cols-2 gap-3">
+                          <div className="flex gap-3">
                             <button
                               type="button"
-                              className={`p-3 rounded-xl border transition-all flex items-center justify-center ${
+                              className={`flex-1 py-3 px-4 rounded-xl border transition-all flex items-center justify-center ${
                                 assignedToType === "Department"
                                   ? "border-indigo-500 bg-indigo-50 shadow-inner"
                                   : "border-gray-200 hover:border-gray-300"
@@ -643,7 +481,7 @@ export default function UserManagementSystem() {
                             
                             <button
                               type="button"
-                              className={`p-3 rounded-xl border transition-all flex items-center justify-center ${
+                              className={`flex-1 py-3 px-4 rounded-xl border transition-all flex items-center justify-center ${
                                 assignedToType === "Market"
                                   ? "border-teal-500 bg-teal-50 shadow-inner"
                                   : "border-gray-200 hover:border-gray-300"
@@ -659,55 +497,128 @@ export default function UserManagementSystem() {
                         <div>
                           <label className="block text-sm font-medium mb-2 text-gray-700">
                             Assign To
+                            <span className="text-xs text-gray-500 ml-2 font-normal">
+                              ({assignedToType === "Department" ? "Department Admin" : "Market Admin"})
+                            </span>
                           </label>
-                          <div className="relative">
-                            <select
-                              value={assignedTo}
-                              onChange={e => setAssignedTo(e.target.value)}
-                              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white"
-                              disabled={!assignedToType}
-                            >
-                              <option value="">Select {assignedToType}</option>
-                              {assignedToType === "Department" 
-                                ? departments.map(dept => (
-                                    <option key={dept._id} value={dept._id}>
-                                      {dept.name}
-                                    </option>
-                                  ))
-                                : markets.map(market => (
-                                    <option key={market._id} value={market._id}>
-                                      {market.name}
-                                    </option>
-                                  ))}
-                            </select>
-                            <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                              {assignedToType === "Department" ? (
-                                <div className="w-5 h-5 text-gray-400" />
-                              ) : (
-                                <GlobeIcon className="w-5 h-5 text-gray-400" />
-                              )}
+                          <div className="flex gap-2">
+                            <div className="relative flex-1">
+                              <Select.Root value={assignedTo} onValueChange={setAssignedTo}>
+                                <Select.Trigger className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg text-left focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-between bg-white">
+                                  <Select.Value placeholder={`Select ${assignedToType}`} />
+                                  <Select.Icon>
+                                    <ChevronDownIcon className="w-5 h-5 text-gray-400" />
+                                  </Select.Icon>
+                                </Select.Trigger>
+                                
+                                <Select.Content className="z-50 bg-white rounded-lg shadow-lg border border-gray-200 mt-1 max-h-60 overflow-y-auto">
+                                  <div className="p-2 border-b border-gray-200 sticky top-0 bg-white">
+                                    <div className="relative">
+                                      <input
+                                        type="text"
+                                        className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder={`Search ${assignedToType.toLowerCase()}s...`}
+                                        value={searchTerm}
+                                        onChange={e => setSearchTerm(e.target.value)}
+                                      />
+                                      <MagnifyingGlassIcon className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    </div>
+                                  </div>
+                                  <Select.Viewport className="p-1">
+                                    {assignedToType === "Department" ? (
+                                      filteredDepartments.length > 0 ? (
+                                        filteredDepartments.map(dept => (
+                                          <Select.Item 
+                                            key={dept._id} 
+                                            value={dept._id}
+                                            className="px-3 py-2 rounded-md flex items-center hover:bg-indigo-50 cursor-pointer outline-none text-gray-700"
+                                          >
+                                            <Select.ItemText>{dept.name}</Select.ItemText>
+                                          </Select.Item>
+                                        ))
+                                      ) : (
+                                        <div className="px-3 py-2 text-sm text-gray-500 text-center">
+                                          No departments found
+                                        </div>
+                                      )
+                                    ) : (
+                                      filteredMarkets.length > 0 ? (
+                                        filteredMarkets.map(market => (
+                                          <Select.Item 
+                                            key={market._id} 
+                                            value={market._id}
+                                            className="px-3 py-2 rounded-md flex items-center hover:bg-teal-50 cursor-pointer outline-none text-gray-700"
+                                          >
+                                            <Select.ItemText>{market.name}</Select.ItemText>
+                                          </Select.Item>
+                                        ))
+                                      ) : (
+                                        <div className="px-3 py-2 text-sm text-gray-500 text-center">
+                                          No markets found
+                                        </div>
+                                      )
+                                    )}
+                                  </Select.Viewport>
+                                </Select.Content>
+                              </Select.Root>
+                              <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                                {assignedToType === "Department" ? (
+                                  <div className="w-5 h-5 text-gray-400" />
+                                ) : (
+                                  <GlobeIcon className="w-5 h-5 text-gray-400" />
+                                )}
+                              </div>
                             </div>
-                            <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                            <button
+                              type="button"
+                              className="p-3 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center"
+                              onClick={() => setCreatingNewEntity(assignedToType.toLowerCase() as "department" | "market")}
+                            >
+                              <PlusIcon className="w-4 h-4" />
+                            </button>
                           </div>
                         </div>
                       </div>
                       
-                      <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 mt-4">
-                        <div className="flex items-start">
-                          <div className="flex-shrink-0 mt-1">
-                            <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
-                              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                      {/* Create New Department/Market Form */}
+                      {creatingNewEntity && (
+                        <motion.div 
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm mt-4"
+                        >
+                          <div className="flex flex-col gap-3">
+                            <div className="flex justify-between items-center">
+                              <h4 className="font-medium text-gray-800">
+                                Create New {creatingNewEntity.charAt(0).toUpperCase() + creatingNewEntity.slice(1)}
+                              </h4>
+                              <button 
+                                className="text-gray-400 hover:text-gray-600"
+                                onClick={() => setCreatingNewEntity(null)}
+                              >
+                                <Cross2Icon className="w-4 h-4" />
+                              </button>
+                            </div>
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value={creatingNewEntity === "department" ? deptName : marketName}
+                                onChange={e => creatingNewEntity === "department" 
+                                  ? setDeptName(e.target.value) 
+                                  : setMarketName(e.target.value)}
+                                placeholder={`Enter ${creatingNewEntity} name`}
+                              />
+                              <button
+                                className="px-3 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                                onClick={creatingNewEntity === "department" ? handleCreateDepartment : handleCreateMarket}
+                              >
+                                Create
+                              </button>
                             </div>
                           </div>
-                          <div className="ml-3">
-                            <p className="text-sm text-blue-700">
-                              {openDialog === "edit" 
-                                ? "User permissions will update immediately. Some changes may require the user to log out and back in."
-                                : "The user will receive an email with instructions to set up their account."}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
+                        </motion.div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -750,84 +661,6 @@ export default function UserManagementSystem() {
               </Dialog.Content>
             </Dialog.Portal>
           </Dialog.Root>
-        </motion.div>
-      </motion.div>
-
-      {/* Departments & Markets Sections */}
-      <motion.div 
-        className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8"
-        variants={stagger}
-        initial="hidden"
-        animate="visible"
-      >
-        <motion.div variants={fadeIn}>
-          <div className="bg-white rounded-2xl shadow-md p-6 border border-gray-100">
-            <div className="flex justify-between items-center mb-5">
-              <h2 className="text-xl font-semibold text-gray-800">Departments</h2>
-              <span className="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                {departments.length} total
-              </span>
-            </div>
-            <div className="space-y-3">
-              {departments.length > 0 ? (
-                departments.map((dept, index) => (
-                  <motion.div
-                    key={dept._id}
-                    className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 flex justify-between items-center"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                  >
-                    <div>
-                      <h3 className="font-medium text-indigo-700">{dept.name}</h3>
-                      <p className="text-xs text-indigo-500 mt-1">ID: {dept._id.substring(0, 8)}</p>
-                    </div>
-                  </motion.div>
-                ))
-              ) : (
-                <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg">
-                  <div className="w-10 h-10 mx-auto text-gray-400" />
-                  <p className="mt-2">No departments found</p>
-                  <p className="text-sm mt-1">Create your first department</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </motion.div>
-        
-        <motion.div variants={fadeIn}>
-          <div className="bg-white rounded-2xl shadow-md p-6 border border-gray-100">
-            <div className="flex justify-between items-center mb-5">
-              <h2 className="text-xl font-semibold text-gray-800">Markets</h2>
-              <span className="bg-teal-100 text-teal-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                {markets.length} total
-              </span>
-            </div>
-            <div className="space-y-3">
-              {markets.length > 0 ? (
-                markets.map((market, index) => (
-                  <motion.div
-                    key={market._id}
-                    className="bg-teal-50 border border-teal-100 rounded-xl p-4 flex justify-between items-center"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                  >
-                    <div>
-                      <h3 className="font-medium text-teal-700">{market.name}</h3>
-                      <p className="text-xs text-teal-500 mt-1">ID: {market._id.substring(0, 8)}</p>
-                    </div>
-                  </motion.div>
-                ))
-              ) : (
-                <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg">
-                  <GlobeIcon className="w-10 h-10 mx-auto text-gray-400" />
-                  <p className="mt-2">No markets found</p>
-                  <p className="text-sm mt-1">Create your first market</p>
-                </div>
-              )}
-            </div>
-          </div>
         </motion.div>
       </motion.div>
 
@@ -900,11 +733,15 @@ export default function UserManagementSystem() {
                               <span className={`px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
                                 user.role === "superadmin" 
                                   ? "bg-purple-100 text-purple-800" 
-                                  : user.role === "admin"
+                                  : user.role.includes("department")
                                   ? "bg-blue-100 text-blue-800"
-                                  : "bg-gray-100 text-gray-800"
+                                  : "bg-teal-100 text-teal-800"
                               }`}>
-                                {user.role}
+                                {user.role === "superadmin" 
+                                  ? "Super Admin" 
+                                  : user.role.includes("department")
+                                  ? "Department Admin"
+                                  : "Market Admin"}
                               </span>
                             </td>
                             <td className="px-6 py-4">
