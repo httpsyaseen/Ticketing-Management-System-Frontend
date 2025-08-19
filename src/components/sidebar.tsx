@@ -59,7 +59,12 @@ const navItems = [
     url: "/old-reports",
     superAdminOnly: true,
   },
-
+{
+    title: "Closed Reports",
+    icon: ChartAreaIcon,
+    url: "/closed-reports",
+    superAdminOnly: true,
+  },
   {
     title: "Users",
     icon: Users,
