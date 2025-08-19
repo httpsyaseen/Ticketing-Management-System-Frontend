@@ -50,7 +50,7 @@ export function DataTable<TData, TValue>({
       },
     },
   });
-
+  console.log(data)
   return (
     <div>
       <div className="rounded-md border bg-white mx-10">
