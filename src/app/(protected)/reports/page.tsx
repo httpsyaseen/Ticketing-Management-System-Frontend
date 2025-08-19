@@ -12,58 +12,51 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
-import { Eye, FileSpreadsheet, MessageSquare } from "lucide-react";
+import { FileSpreadsheet, ChevronLeft, ChevronRight } from "lucide-react";
 
-import * as XLSX from "xlsx";
 import api from "@/lib/api";
+import { generateExcelReport } from "@/utils/helper";
+import { ReportViewDialog } from "@/components/report-view-dialog";
+import { MarketReport, WeeklyReport } from "@/types/report";
+import { SendMonitoringDialog } from "@/components/reports/send-monitoring";
 
-interface MarketReport {
-  _id: string;
-  marketId: {
-    _id: string;
-    name: string;
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const options: Intl.DateTimeFormatOptions = {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
   };
-  createdAt: string;
-  isSubmitted: boolean;
-  updatedAt: string;
-  biometricStatus?: boolean;
-  faultyCCTV?: number;
-  faultyMetalDetectors?: number;
-  faultyWalkthroughGates?: number;
-  totalCCTV?: number;
-  walkthroughGates?: number;
-  metalDetectors?: number;
-  comments?: string;
-}
-
-interface WeeklyReport {
-  _id: string;
-  createdAt: string;
-  marketsReport: MarketReport[];
-  clearedByIt: boolean;
-}
+  return date.toLocaleDateString("en-US", options);
+};
 
 export default function SecurityReportsPage() {
   const [reportData, setReportData] = useState<WeeklyReport | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedReport, setSelectedReport] = useState<MarketReport | null>(
-    null
-  );
-  const [comment, setComment] = useState("");
-  const [submittingComment, setSubmittingComment] = useState(false);
+  const [activeTab, setActiveTab] = useState("all");
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
     fetchWeeklyReport();
   }, []);
+
+  // Reset to first page when tab changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
 
   const fetchWeeklyReport = async () => {
     try {
@@ -77,63 +70,17 @@ export default function SecurityReportsPage() {
     }
   };
 
-  const handleAddComment = async () => {
-    if (!selectedReport || !comment.trim()) return;
+  const handleReportUpdate = (updatedMarket: MarketReport) => {
+    setReportData((prevData) => {
+      if (!prevData) return prevData;
 
-    try {
-      setSubmittingComment(true);
-      const response = await fetch(
-        `/api/report/update-security-report/${selectedReport._id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ comments: comment }),
-        }
-      );
-
-      if (response.ok) {
-        setComment("");
-        fetchWeeklyReport(); // Refresh data
-      } else {
-        throw new Error("Failed to add comment");
-      }
-    } catch (error) {
-      console.error("Error adding comment:", error);
-    } finally {
-      setSubmittingComment(false);
-    }
-  };
-
-  const generateExcelReport = () => {
-    if (!reportData) return;
-
-    const excelData = reportData.marketsReport.map((report) => ({
-      "Sahulat Bazaar Name": report.marketId.name,
-      CCTV: report.totalCCTV || 0,
-      "Faulty CCTV": report.faultyCCTV || 0,
-      "Walkthrough Gates": report.walkthroughGates || 0,
-      "Faulty Walkthrough Gates": report.faultyWalkthroughGates || 0,
-      "Metal Detectors": report.metalDetectors || 0,
-      "Faulty Metal Detectors": report.faultyMetalDetectors || 0,
-      "Biometric Status( Yes / No )": report.biometricStatus ? "Yes" : "No",
-      "Comments / Remarks by the IT Department": report.comments || "",
-    }));
-
-    const worksheet = XLSX.utils.json_to_sheet(excelData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Security Report");
-
-    const fileName = `Security_Report_${
-      new Date().toISOString().split("T")[0]
-    }.xlsx`;
-    XLSX.writeFile(workbook, fileName);
-  };
-
-  const handleViewReport = (market: MarketReport) => {
-    setSelectedReport(market);
-    setComment(market.comments || "");
+      return {
+        ...prevData,
+        marketsReport: prevData.marketsReport.map((market) =>
+          market._id === updatedMarket._id ? updatedMarket : market
+        ),
+      };
+    });
   };
 
   const allMarkets = reportData?.marketsReport || [];
@@ -144,263 +91,146 @@ export default function SecurityReportsPage() {
   const allSubmitted =
     allMarkets.length > 0 && allMarkets.every((market) => market.isSubmitted);
 
+  // Get current tab data
+  const getCurrentTabData = () => {
+    switch (activeTab) {
+      case "submitted":
+        return submittedMarkets;
+      case "not-submitted":
+        return notSubmittedMarkets;
+      default:
+        return allMarkets;
+    }
+  };
+
+  const currentTabData = getCurrentTabData();
+  const totalPages = Math.ceil(currentTabData.length / rowsPerPage);
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const endIndex = startIndex + rowsPerPage;
+  const currentPageData = currentTabData.slice(startIndex, endIndex);
+
+  const handlePreviousPage = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  };
+
+  const handleRowsPerPageChange = (value: string) => {
+    setRowsPerPage(Number(value));
+    setCurrentPage(1);
+  };
+
   const renderMarketTable = (markets: MarketReport[]) => (
-    <Table className="bg-white rounded-md">
-      <TableHeader>
-        <TableRow>
-          <TableHead>Market Name</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Last Updated</TableHead>
-          <TableHead>CCTV Status</TableHead>
-          <TableHead>Metal Detectors</TableHead>
-          <TableHead>Walkthrough Gates</TableHead>
-          <TableHead>Biometric</TableHead>
-          <TableHead>Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {markets.map((market) => (
-          <TableRow key={market._id}>
-            <TableCell className="font-medium">
-              {market.marketId.name}
-            </TableCell>
-            <TableCell>
-              <Badge variant={market.isSubmitted ? "default" : "secondary"}>
-                {market.isSubmitted ? "Submitted" : "Not Submitted"}
-              </Badge>
-            </TableCell>
-            <TableCell>
-              {new Date(market.updatedAt).toLocaleDateString()}
-            </TableCell>
-            <TableCell>
-              {market.isSubmitted ? (
-                <div className="space-y-1">
-                  <div className="text-sm font-medium">
-                    {market.totalCCTV || 0} Total
-                  </div>
-                  <Badge
-                    variant={market.faultyCCTV ? "destructive" : "default"}
-                    className="text-xs"
-                  >
-                    {market.faultyCCTV || 0} Faulty
-                  </Badge>
-                </div>
-              ) : (
-                <span className="text-muted-foreground">-</span>
-              )}
-            </TableCell>
-            <TableCell>
-              {market.isSubmitted ? (
-                <div className="space-y-1">
-                  <div className="text-sm font-medium">
-                    {market.metalDetectors || 0} Total
-                  </div>
-                  <Badge
-                    variant={
-                      market.faultyMetalDetectors ? "destructive" : "default"
-                    }
-                    className="text-xs"
-                  >
-                    {market.faultyMetalDetectors || 0} Faulty
-                  </Badge>
-                </div>
-              ) : (
-                <span className="text-muted-foreground">-</span>
-              )}
-            </TableCell>
-            <TableCell>
-              {market.isSubmitted ? (
-                <div className="space-y-1">
-                  <div className="text-sm font-medium">
-                    {market.walkthroughGates || 0} Total
-                  </div>
-                  <Badge
-                    variant={
-                      market.faultyWalkthroughGates ? "destructive" : "default"
-                    }
-                    className="text-xs"
-                  >
-                    {market.faultyWalkthroughGates || 0} Faulty
-                  </Badge>
-                </div>
-              ) : (
-                <span className="text-muted-foreground">-</span>
-              )}
-            </TableCell>
-            <TableCell>
-              {market.isSubmitted ? (
-                <Badge
-                  variant={market.biometricStatus ? "default" : "destructive"}
-                >
-                  {market.biometricStatus ? "Active" : "Inactive"}
-                </Badge>
-              ) : (
-                <span className="text-muted-foreground">-</span>
-              )}
-            </TableCell>
-            <TableCell>
-              {market.isSubmitted && (
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleViewReport(market)}
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      View Report
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle className="text-xl font-semibold">
-                        {market.marketId.name} - Security Report Details
-                      </DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-4">
-                          <div className="space-y-2">
-                            <Label className="text-base font-medium">
-                              CCTV Information
-                            </Label>
-                            <div className="p-4 border rounded-lg bg-muted/50">
-                              <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                  <Label className="text-sm text-muted-foreground">
-                                    Total CCTV
-                                  </Label>
-                                  <div className="text-2xl font-bold">
-                                    {market.totalCCTV || 0}
-                                  </div>
-                                </div>
-                                <div>
-                                  <Label className="text-sm text-muted-foreground">
-                                    Faulty CCTV
-                                  </Label>
-                                  <div className="text-2xl font-bold text-destructive">
-                                    {market.faultyCCTV || 0}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label className="text-base font-medium">
-                              Metal Detectors
-                            </Label>
-                            <div className="p-4 border rounded-lg bg-muted/50">
-                              <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                  <Label className="text-sm text-muted-foreground">
-                                    Total Units
-                                  </Label>
-                                  <div className="text-2xl font-bold">
-                                    {market.metalDetectors || 0}
-                                  </div>
-                                </div>
-                                <div>
-                                  <Label className="text-sm text-muted-foreground">
-                                    Faulty Units
-                                  </Label>
-                                  <div className="text-2xl font-bold text-destructive">
-                                    {market.faultyMetalDetectors || 0}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="space-y-4">
-                          <div className="space-y-2">
-                            <Label className="text-base font-medium">
-                              Walkthrough Gates
-                            </Label>
-                            <div className="p-4 border rounded-lg bg-muted/50">
-                              <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                  <Label className="text-sm text-muted-foreground">
-                                    Total Gates
-                                  </Label>
-                                  <div className="text-2xl font-bold">
-                                    {market.walkthroughGates || 0}
-                                  </div>
-                                </div>
-                                <div>
-                                  <Label className="text-sm text-muted-foreground">
-                                    Faulty Gates
-                                  </Label>
-                                  <div className="text-2xl font-bold text-destructive">
-                                    {market.faultyWalkthroughGates || 0}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label className="text-base font-medium">
-                              Biometric System
-                            </Label>
-                            <div className="p-4 border rounded-lg bg-muted/50">
-                              <div className="flex items-center justify-center">
-                                <Badge
-                                  variant={
-                                    market.biometricStatus
-                                      ? "default"
-                                      : "destructive"
-                                  }
-                                  className="text-lg px-4 py-2"
-                                >
-                                  {market.biometricStatus
-                                    ? "Active"
-                                    : "Inactive"}
-                                </Badge>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-4 border-t pt-6">
-                        <div className="space-y-2">
-                          <Label
-                            htmlFor="comment"
-                            className="text-base font-medium"
-                          >
-                            IT Department Comments / Remarks
-                          </Label>
-                          <Textarea
-                            id="comment"
-                            placeholder="Enter your comments or remarks about this security report..."
-                            value={comment}
-                            onChange={(e) => setComment(e.target.value)}
-                            rows={4}
-                            className="resize-none"
-                          />
-                          <div className="flex justify-end">
-                            <Button
-                              onClick={handleAddComment}
-                              disabled={submittingComment || !comment.trim()}
-                              size="sm"
-                            >
-                              <MessageSquare className="h-4 w-4 mr-2" />
-                              {submittingComment ? "Saving..." : "Save Comment"}
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              )}
-            </TableCell>
+    <div className="space-y-4">
+      <Table className="bg-white rounded-md p-2">
+        <TableHeader className="px-2">
+          <TableRow>
+            <TableHead>Market Name</TableHead>
+            <TableHead>Created At</TableHead>
+            <TableHead>Submitted At</TableHead>
+            <TableHead>Submitted</TableHead>
+            <TableHead>Actions</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {markets.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                No reports found
+              </TableCell>
+            </TableRow>
+          ) : (
+            markets.map((market) => (
+              <TableRow key={market._id}>
+                <TableCell className="font-medium">
+                  {market.marketId.name}
+                </TableCell>
+                <TableCell>{formatDate(market.createdAt)}</TableCell>
+                <TableCell>
+                  {market?.updatedAt ? formatDate(market.updatedAt) : "N/A"}
+                </TableCell>
+                <TableCell>
+                  <Badge
+                    variant={market.isSubmitted ? "default" : "destructive"}
+                  >
+                    {market.isSubmitted ? "Yes" : "No"}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <ReportViewDialog
+                    market={market}
+                    onReportUpdate={handleReportUpdate}
+                  />
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+
+      {/* Pagination Controls */}
+      {currentTabData.length > 0 && (
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-700">Rows per page:</span>
+              <Select
+                value={rowsPerPage.toString()}
+                onValueChange={handleRowsPerPageChange}
+              >
+                <SelectTrigger className="w-20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5">5</SelectItem>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                  <SelectItem value="100">100</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="text-sm text-gray-700">
+              Showing {startIndex + 1} to{" "}
+              {Math.min(endIndex, currentTabData.length)} of{" "}
+              {currentTabData.length} results
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePreviousPage}
+              disabled={currentPage === 1}
+              className="flex items-center gap-1"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Previous
+            </Button>
+
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-700">
+                Page {currentPage} of {totalPages}
+              </span>
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+              className="flex items-center gap-1"
+            >
+              Next
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 
   if (loading) {
@@ -420,39 +250,40 @@ export default function SecurityReportsPage() {
           <h1 className="text-3xl font-bold">Weekly Security Reports</h1>
         </div>
         <div className="flex gap-2">
-          <Button onClick={generateExcelReport} variant="outline">
+          <Button
+            onClick={() => reportData && generateExcelReport(reportData)}
+            variant="outline"
+          >
             <FileSpreadsheet className="h-4 w-4 mr-2" />
             Generate Excel Report
           </Button>
-          {allSubmitted && <Button>Compile Report</Button>}
+          {!allSubmitted && <SendMonitoringDialog />}
         </div>
       </div>
 
-      <div className="">
-        <Tabs defaultValue="all" className="w-full">
-          <TabsList className="grid w-[40%] grid-cols-3">
-            <TabsTrigger value="all">
-              All Markets ({allMarkets.length})
-            </TabsTrigger>
-            <TabsTrigger value="submitted">
-              Submitted ({submittedMarkets.length})
-            </TabsTrigger>
-            <TabsTrigger value="not-submitted">
-              Not Submitted ({notSubmittedMarkets.length})
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-[40%] grid-cols-3">
+          <TabsTrigger value="all">
+            All Markets ({allMarkets.length})
+          </TabsTrigger>
+          <TabsTrigger value="submitted">
+            Submitted ({submittedMarkets.length})
+          </TabsTrigger>
+          <TabsTrigger value="not-submitted">
+            Not Submitted ({notSubmittedMarkets.length})
+          </TabsTrigger>
+        </TabsList>
 
-      <Tabs defaultValue="all" className="w-full">
-        <TabsContent value="all">{renderMarketTable(allMarkets)}</TabsContent>
-
-        <TabsContent value="submitted">
-          {renderMarketTable(submittedMarkets)}
+        <TabsContent value="all" className="mt-6">
+          {renderMarketTable(currentPageData)}
         </TabsContent>
 
-        <TabsContent value="not-submitted">
-          {renderMarketTable(notSubmittedMarkets)}
+        <TabsContent value="submitted" className="mt-6">
+          {renderMarketTable(currentPageData)}
+        </TabsContent>
+
+        <TabsContent value="not-submitted" className="mt-6">
+          {renderMarketTable(currentPageData)}
         </TabsContent>
       </Tabs>
     </div>

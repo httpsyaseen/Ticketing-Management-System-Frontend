@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  reactStrictMode: true,
+  reactStrictMode: false,
 };
 
 export default nextConfig;

@@ -4,7 +4,6 @@ export type Department = {
 };
 
 export type Ticket = {
-  find: any;
   department: Department;
   images: string[];
   _id: string;
@@ -26,7 +25,7 @@ export type Ticket = {
   };
   createdAt: string;
   updatedAt: string;
-  inProgressAt:string
+  inProgressAt: string;
   estimatedResolutionTime?: string;
   resolvedAt?: string;
   closedAt?: string;
