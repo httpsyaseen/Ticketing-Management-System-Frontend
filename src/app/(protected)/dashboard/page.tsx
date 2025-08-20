@@ -5,7 +5,7 @@ import { useAuth } from "@/context/auth-context";
 import api from "@/lib/api";
 import { useRouter } from "next/navigation";
 import DashboardTabs from "@/components/DashboardTabs";
-import { DataTable } from "@/components/ticketingDataTable/DataTable";
+import { DataTable } from "@/components/DataTable";
 import { getTicketColumns } from "@/components/ticketingDataTable/columns";
 import { Ticket } from "@/types/tickets";
 import showError from "@/components/send-error";

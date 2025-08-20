@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CalendarDays, TicketIcon, Tag } from "lucide-react";
-import { DataTable } from "@/components/ticketingDataTable/DataTable";
+import { DataTable } from "@/components/DataTable";
 import { getTicketColumns } from "@/components/ticketingDataTable/columns";
 import type { Ticket } from "@/types/tickets";
 import { toast } from "react-hot-toast";

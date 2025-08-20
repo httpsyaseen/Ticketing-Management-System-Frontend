@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CalendarDays, FileDown, TicketIcon } from "lucide-react";
-import { DataTable } from "@/components/ticketingDataTable/DataTable";
+import { DataTable } from "@/components/DataTable";
 import { getWeeklyReportColumns } from "@/components/reports/columns"; // ✅ custom columns
 import { WeeklyReport } from "@/types/report";
 import { toast } from "react-hot-toast";

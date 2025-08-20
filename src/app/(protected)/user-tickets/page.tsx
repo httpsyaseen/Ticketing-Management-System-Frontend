@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
 import DashboardTabs from "@/components/DashboardTabs";
-import { DataTable } from "@/components/ticketingDataTable/DataTable";
+import { DataTable } from "@/components/DataTable";
 import { getTicketColumns } from "@/components/ticketingDataTable/columns";
 import api from "@/lib/api";
 import { Ticket } from "@/types/tickets";

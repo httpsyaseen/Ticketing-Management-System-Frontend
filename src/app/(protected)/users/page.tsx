@@ -24,19 +24,9 @@ import { toast } from "react-hot-toast";
 import api from "@/lib/api";
 import { useAuth } from "@/context/auth-context";
 import { useTicket } from "@/context/ticket-context";
-
-interface User {
-  _id: string;
-  name: string;
-  email: string;
-  role: string;
-  assignedToType: "Department" | "Market";
-  assignedTo: {
-    _id: string;
-    name: string;
-  };
-  active: boolean;
-}
+import { DataTable } from "@/components/DataTable";
+import { userColumns } from "@/components/userColumn/column";
+import { User } from "@/types/userType";
 
 interface Department {
   _id: string;
@@ -73,6 +63,7 @@ export default function UserManagementSystem() {
   >(null);
   const [searchTerm, setSearchTerm] = useState("");
   const deleteTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [rowsPerPage, setRowsPerPage] = React.useState("10");
 
   // Fetch data from backend
   useEffect(() => {
@@ -256,7 +247,7 @@ export default function UserManagementSystem() {
     setUserName(user.name);
     setUserEmail(user.email);
     setAssignedToType(user.assignedToType);
-    setAssignedTo(user.assignedTo._id);
+    setAssignedTo(user?.assignedTo?._id ?? "");
     setOpenDialog("edit");
   };
 
@@ -374,7 +365,6 @@ export default function UserManagementSystem() {
                 Create User
               </motion.button>
             </Dialog.Trigger>
-
             <Dialog.Portal>
               <Dialog.Overlay className="bg-black/60 fixed inset-0 backdrop-blur-sm" />
               <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -399,7 +389,6 @@ export default function UserManagementSystem() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-6">
-                  {/* Personal Information */}
                   <div className="bg-gray-50 p-5 rounded-xl border border-gray-200">
                     <h3 className="text-lg font-semibold text-gray-800 mb-5 flex items-center">
                       <AvatarIcon className="w-5 h-5 mr-2 text-blue-500" />
@@ -486,7 +475,6 @@ export default function UserManagementSystem() {
                     </div>
                   </div>
 
-                  {/* Assignment Section */}
                   <div className="bg-gray-50 p-5 rounded-xl border border-gray-200">
                     <h3 className="text-lg font-semibold text-gray-800 mb-5 flex items-center">
                       <MixerHorizontalIcon className="w-5 h-5 mr-2 text-indigo-500" />
@@ -633,7 +621,6 @@ export default function UserManagementSystem() {
                         </div>
                       </div>
 
-                      {/* Create New Department/Market Form */}
                       {creatingNewEntity && (
                         <motion.div
                           initial={{ opacity: 0, height: 0 }}
@@ -767,119 +754,12 @@ export default function UserManagementSystem() {
 
             <Accordion.Content className="overflow-hidden data-[state=open]:animate-slideDown data-[state=closed]:animate-slideUp">
               <div className="px-6 pb-6">
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          User
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Role
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Assignment
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Status
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      <AnimatePresence>
-                        {users?.map((user) => (
-                          <motion.tr
-                            key={user._id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.98 }}
-                            className="hover:bg-gray-50"
-                          >
-                            <td className="px-6 py-4">
-                              <div className="flex items-center">
-                                <div className="flex-shrink-0 h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center">
-                                  <PersonIcon className="h-5 w-5 text-indigo-600" />
-                                </div>
-                                <div className="ml-4">
-                                  <div className="text-sm font-medium text-gray-900">
-                                    {user.name}
-                                  </div>
-                                  <div className="text-sm text-gray-500">
-                                    {user.email}
-                                  </div>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span
-                                className={`px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                  user.role === "superadmin"
-                                    ? "bg-purple-100 text-purple-800"
-                                    : user.role.includes("department")
-                                    ? "bg-blue-100 text-blue-800"
-                                    : "bg-teal-100 text-teal-800"
-                                }`}
-                              >
-                                {user.role === "superadmin"
-                                  ? "Super Admin"
-                                  : user.role.includes("department")
-                                  ? "Department Admin"
-                                  : "Market Admin"}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4">
-                              <div className="text-sm text-gray-900">
-                                {user.assignedTo?.name}
-                              </div>
-                              <div className="text-sm text-gray-500 capitalize">
-                                {user.assignedToType.toLowerCase()}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span
-                                className={`px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                  user.active
-                                    ? "bg-green-100 text-green-800"
-                                    : "bg-red-100 text-red-800"
-                                }`}
-                              >
-                                {user.active ? "Active" : "Inactive"}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex space-x-2">
-                                <button
-                                  className="p-2 rounded-md hover:bg-blue-100 text-blue-600 transition-colors"
-                                  onClick={() => openEditDialog(user)}
-                                >
-                                  <Pencil2Icon className="w-4 h-4" />
-                                </button>
-                                <button
-                                  className={`p-2 rounded-md transition-colors ${
-                                    deleteConfirm === user._id
-                                      ? "bg-red-500 text-white"
-                                      : "hover:bg-red-100 text-red-600"
-                                  }`}
-                                  onClick={() => handleDeleteUser(user._id)}
-                                  disabled={!user.active}
-                                >
-                                  {deleteConfirm === user._id ? (
-                                    <span className="text-xs">Confirm</span>
-                                  ) : (
-                                    <TrashIcon className="w-4 h-4" />
-                                  )}
-                                </button>
-                              </div>
-                            </td>
-                          </motion.tr>
-                        ))}
-                      </AnimatePresence>
-                    </tbody>
-                  </table>
-                </div>
+                <DataTable
+                  columns={userColumns(openEditDialog, handleDeleteUser, deleteConfirm)}
+                  data={users}
+                  rowsPerPage={rowsPerPage}
+                  setRowsPerPage={setRowsPerPage}
+                />
 
                 {users.length === 0 && (
                   <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-xl">
