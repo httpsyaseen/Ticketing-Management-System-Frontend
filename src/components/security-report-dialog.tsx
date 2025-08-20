@@ -116,7 +116,6 @@ export function SecurityReportDialog() {
                 id="faultyCCTV"
                 type="number"
                 min="0"
-                max={formData.totalCCTV}
                 value={formData.faultyCCTV}
                 onChange={(e) =>
                   handleInputChange(
@@ -152,7 +151,6 @@ export function SecurityReportDialog() {
                 id="faultyWalkthroughGates"
                 type="number"
                 min="0"
-                max={formData.walkthroughGates}
                 value={formData.faultyWalkthroughGates}
                 onChange={(e) =>
                   handleInputChange(
@@ -188,7 +186,6 @@ export function SecurityReportDialog() {
                 id="faultyMetalDetectors"
                 type="number"
                 min="0"
-                max={formData.metalDetector}
                 value={formData.faultyMetalDetectors}
                 onChange={(e) =>
                   handleInputChange(

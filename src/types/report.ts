@@ -20,7 +20,12 @@ export interface MarketReport {
 
 export interface WeeklyReport {
   _id: string;
-  createdAt: string;
+  createdAt: Date;
   marketsReport: MarketReport[];
   clearedByIt: boolean;
+  clearedByItAt: Date;
+  clearedByMonitoring: boolean;
+  clearedByMonitoringAt: Date;
+  clearedByOperations: boolean;
+  clearedByOperationsAt: Date;
 }

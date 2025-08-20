@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import api from "@/lib/api";
+import { WeeklyReport, MarketReport } from "@/types/report";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -20,14 +23,13 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { FileSpreadsheet, ChevronLeft, ChevronRight } from "lucide-react";
-
 import { generateExcelReport } from "@/utils/helper";
 import { ReportViewDialog } from "@/components/report-view-dialog";
-import { MarketReport, WeeklyReport } from "@/types/report";
 import { SendMonitoringDialog } from "@/components/reports/send-monitoring";
 import { SendOperationsDialog } from "@/components/reports/send-operations";
 import { ClearOperationsDialog } from "@/components/reports/clear-operations";
 import { ReportStatusTimeline } from "@/components/reports/report-status";
+
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   const options: Intl.DateTimeFormatOptions = {
@@ -41,32 +43,43 @@ const formatDate = (dateString: string) => {
   return date.toLocaleDateString("en-US", options);
 };
 
-interface pageProps {
-  reportData: WeeklyReport;
-  loading: boolean;
-  setReportData: React.Dispatch<React.SetStateAction<WeeklyReport>>;
-}
+export default function ReportUpdatePage() {
+  const params = useParams();
+  const reportId = params?.id as string;
 
-export default function SecurityReportsPage({
-  reportData,
-  loading,
-  setReportData,
-}: pageProps) {
+  const [reportData, setReportData] = useState<WeeklyReport>(
+    {} as WeeklyReport
+  );
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("all");
-
-  // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  // Reset to first page when tab changes
+  useEffect(() => {
+    if (reportId) {
+      fetchWeeklyReport(reportId);
+    }
+  }, [reportId]);
+
   useEffect(() => {
     setCurrentPage(1);
   }, [activeTab]);
 
+  const fetchWeeklyReport = async (id: string) => {
+    try {
+      setLoading(true);
+      const { data } = await api(`/report/get-weekly-report/${id}`);
+      setReportData(data.data.report);
+    } catch (error) {
+      console.error("Error fetching weekly report:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleReportUpdate = (updatedMarket: MarketReport) => {
     setReportData((prevData) => {
       if (!prevData) return prevData;
-
       return {
         ...prevData,
         marketsReport: prevData.marketsReport.map((market) =>
@@ -82,7 +95,6 @@ export default function SecurityReportsPage({
     (market) => !market.isSubmitted
   );
 
-  // Get current tab data
   const getCurrentTabData = () => {
     switch (activeTab) {
       case "submitted":

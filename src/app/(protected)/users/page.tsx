@@ -83,14 +83,6 @@ export default function UserManagementSystem() {
         // Fetch users
         const usersRes = await api.get("/users/getallusers");
         setUsers(usersRes.data.data.users);
-
-        // Fetch departments
-        const deptsRes = await api.get("/get-all-departments");
-        setDepartments(deptsRes.data.data);
-
-        // Fetch markets
-        const marketsRes = await api.get("/get-all-markets");
-        setMarkets(marketsRes.data.data);
       } catch (error) {
         toast.error("Failed to fetch data");
       } finally {

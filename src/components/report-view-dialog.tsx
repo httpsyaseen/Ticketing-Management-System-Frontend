@@ -21,6 +21,7 @@ import { MarketReport } from "@/types/report";
 interface ReportViewDialogProps {
   market: MarketReport;
   onReportUpdate?: (updatedMarket: MarketReport) => void;
+  totaldisabled: boolean;
 }
 
 const formatDate = (dateString: string) => {
@@ -39,6 +40,7 @@ const formatDate = (dateString: string) => {
 export function ReportViewDialog({
   market,
   onReportUpdate,
+  totaldisabled,
 }: ReportViewDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [comment, setComment] = useState(market.comments || "");
@@ -249,6 +251,7 @@ export function ReportViewDialog({
                 onChange={(e) => setComment(e.target.value)}
                 className="min-h-[100px] resize-none"
                 rows={4}
+                disabled={totaldisabled}
               />
             </div>
           </div>

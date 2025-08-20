@@ -8,8 +8,10 @@ import { WeeklyReport } from "@/types/report";
 import { useAuth } from "@/context/auth-context";
 
 export default function Page() {
-  const [reportData, setReportData] = useState<WeeklyReport | null>(null);
-  const { user } = useAuth();
+  const [reportData, setReportData] = useState<WeeklyReport>(
+    {} as WeeklyReport
+  );
+  // const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     fetchWeeklyReport();
@@ -27,9 +29,9 @@ export default function Page() {
     }
   };
 
-  if (reportData?.clearedByIt) {
-    return null;
-  }
+  // if (!reportData?.clearedByIt) {
+  //   return null;
+  // }
 
   return (
     <div>

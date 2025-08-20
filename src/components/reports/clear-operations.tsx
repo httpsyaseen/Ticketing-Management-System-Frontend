@@ -15,23 +15,27 @@ import { Send, AlertTriangle } from "lucide-react";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
 
-export function SendMonitoringDialog({
+export function ClearOperationsDialog({
   id,
   cleared,
+  clearedByIT,
+  clearedByMonitoring,
 }: {
   id: string;
   cleared: boolean;
+  clearedByIT: boolean;
+  clearedByMonitoring: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSendToMonitoring = async () => {
+  const handleSendToOperations = async () => {
     try {
-      await api.patch(`/report/clear-by-it/${id}`);
-      toast.success("Report sent to Monitoring Department successfully!");
+      await api.patch(`/report/clear-by-operations/${id}`);
+      toast.success("Report sent to Operations Department successfully!");
       setIsOpen(false);
     } catch (error) {
-      console.error("Error sending report to monitoring:", error);
+      console.error("Error sending report to Operations:", error);
       toast.error("Failed to send report. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -42,7 +46,7 @@ export function SendMonitoringDialog({
     setIsOpen(false);
   };
 
-  if (cleared) {
+  if (!clearedByIT || !clearedByMonitoring || cleared) {
     return null;
   }
 
@@ -54,7 +58,7 @@ export function SendMonitoringDialog({
           className="bg-green-600 hover:bg-green-700 text-white hover:text-white shadow-sm hover:shadow-md transition-all duration-200"
         >
           <Send className="h-4 w-4 mr-2" />
-          Send to Monitoring
+          Final Report
         </Button>
       </DialogTrigger>
 
@@ -62,11 +66,10 @@ export function SendMonitoringDialog({
         <DialogHeader className="pb-4 border-b border-gray-200 dark:border-gray-800">
           <DialogTitle className="text-2xl font-bold flex items-center gap-3 text-gray-900 dark:text-gray-50">
             <AlertTriangle className="h-6 w-6 text-red-500" />
-            Confirm Send to Monitoring
+            Confirm Finalize
           </DialogTitle>
           <DialogDescription className="text-md text-gray-600 dark:text-gray-400 mt-2">
-            This action will send the compiled report to the Monitoring
-            Department for review.
+            This action will send the compiled report
           </DialogDescription>
         </DialogHeader>
 
@@ -75,11 +78,11 @@ export function SendMonitoringDialog({
             <AlertTriangle className="h-5 w-5 text-red-500 flex-shrink-0" />
             <div className="text-sm text-gray-700 dark:text-gray-300">
               <p className="font-medium mb-1">
-                Are you sure you want to send this report to the Monitoring
+                Are you sure you want to send this report to the Operations
                 Department?
               </p>
               <p className="text-gray-600 dark:text-gray-400">
-                Once sent, the report will be reviewed by the monitoring team.
+                Once sent, the report will be reviewed by the Operations team.
               </p>
             </div>
           </div>
@@ -97,7 +100,7 @@ export function SendMonitoringDialog({
           </Button>
           <Button
             type="button"
-            onClick={handleSendToMonitoring}
+            onClick={handleSendToOperations}
             disabled={isSubmitting}
             className="px-6 py-3 text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
