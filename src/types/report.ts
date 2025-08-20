@@ -1,31 +1,33 @@
+export interface Market {
+  _id: string;
+  name: string;
+}
+
 export interface MarketReport {
   _id: string;
-  marketId: {
-    _id: string;
-    name: string;
-  };
+  marketId: Market;
   createdAt: string;
+  updatedAt: string; // ✅ required
   isSubmitted: boolean;
   submittedAt?: string;
-  updatedAt: string;
-  biometricStatus?: boolean;
-  faultyCCTV?: number;
-  faultyMetalDetectors?: number;
-  faultyWalkthroughGates?: number;
   totalCCTV?: number;
+  faultyCCTV?: number;
   walkthroughGates?: number;
+  faultyWalkthroughGates?: number;
   metalDetectors?: number;
+  faultyMetalDetectors?: number;
+  biometricStatus?: boolean;
   comments?: string;
 }
 
 export interface WeeklyReport {
   _id: string;
-  createdAt: Date;
-  marketsReport: MarketReport[];
+  createdAt: string;
+  marketsReport: MarketReport[]; // ✅ consistent
   clearedByIt: boolean;
-  clearedByItAt: Date;
+  clearedByItAt: string | null;
   clearedByMonitoring: boolean;
-  clearedByMonitoringAt: Date;
+  clearedByMonitoringAt: string | null;
   clearedByOperations: boolean;
-  clearedByOperationsAt: Date;
+  clearedByOperationsAt: string | null;
 }
