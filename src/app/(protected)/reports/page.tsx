@@ -6,12 +6,13 @@ import api from "@/lib/api";
 import { WeeklyReport } from "@/types/report";
 
 import { useAuth } from "@/context/auth-context";
+import NotReadyWeeklyReport from "@/components/reports/not-ready";
 
 export default function Page() {
   const [reportData, setReportData] = useState<WeeklyReport>(
     {} as WeeklyReport
   );
-  // const { user } = useAuth();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     fetchWeeklyReport();
@@ -29,9 +30,19 @@ export default function Page() {
     }
   };
 
-  // if (!reportData?.clearedByIt) {
-  //   return null;
-  // }
+  if (
+    !reportData?.clearedByIt &&
+    user?.assignedTo.name.includes("Monitoring")
+  ) {
+    return <NotReadyWeeklyReport />;
+  }
+
+  if (
+    !reportData?.clearedByMonitoring &&
+    user?.assignedTo.name.includes("Operation")
+  ) {
+    return <NotReadyWeeklyReport />;
+  }
 
   return (
     <div>

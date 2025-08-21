@@ -24,12 +24,14 @@ export function SendMonitoringDialog({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [shouldShow, setShouldShow] = useState(true);
 
   const handleSendToMonitoring = async () => {
     try {
       await api.patch(`/report/clear-by-it/${id}`);
       toast.success("Report sent to Monitoring Department successfully!");
       setIsOpen(false);
+      setShouldShow(false);
     } catch (error) {
       console.error("Error sending report to monitoring:", error);
       toast.error("Failed to send report. Please try again.");
@@ -41,6 +43,10 @@ export function SendMonitoringDialog({
   const handleCancel = () => {
     setIsOpen(false);
   };
+
+  if (!shouldShow) {
+    return null;
+  }
 
   if (cleared) {
     return null;

@@ -26,50 +26,58 @@ import { useAuth } from "@/context/auth-context";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 
-// Navigation items
+// Navigation items with department restrictions
 const navItems = [
   {
     title: "Dashboard",
     icon: BarChart3,
     url: "/dashboard",
     superAdminOnly: false,
+    allowedDepartments: ["all"],
   },
   {
     title: "Your Tickets",
     icon: Ticket,
     url: "/user-tickets",
     superAdminOnly: false,
+    allowedDepartments: ["all"],
   },
-
   {
     title: "Closed Tickets",
     icon: FolderClosed,
     url: "/closed-tickets",
     superAdminOnly: false,
+    allowedDepartments: ["all"],
   },
   {
     title: "Reports and Analytics",
     icon: ChartAreaIcon,
     url: "/reports",
-    superAdminOnly: true,
+    superAdminOnly: false,
+    allowedDepartments: [
+      "IT Department",
+      "Monitoring Department",
+      "Operations Department",
+    ],
   },
   {
     title: "Old Weekly Reports",
     icon: ChartAreaIcon,
-    url: "/old-reports",
-    superAdminOnly: true,
-  },
-{
-    title: "Closed Reports",
-    icon: ChartAreaIcon,
     url: "/closed-reports",
-    superAdminOnly: true,
+    superAdminOnly: false,
+    allowedDepartments: [
+      "IT Department",
+      "Monitoring Department",
+      "Operations Department",
+    ],
   },
+
   {
     title: "Users",
     icon: Users,
     url: "/users",
     superAdminOnly: true,
+    allowedDepartments: ["all"],
   },
 ];
 
@@ -81,6 +89,29 @@ export default function AppSidebar() {
     return <></>;
   }
 
+  // Helper function to check if user can access a route
+  const canAccessRoute = (item: (typeof navItems)[0]) => {
+    // Check superadmin access first
+    if (item.superAdminOnly && user?.role !== "superadmin") {
+      return false;
+    }
+
+    // If allowedDepartments includes "all", everyone can access
+    if (item.allowedDepartments.includes("all")) {
+      return true;
+    }
+
+    // Check if user's department is in allowed departments
+    const userDepartment = user?.assignedTo?.name;
+    if (!userDepartment) {
+      return false;
+    }
+    console.log(userDepartment);
+    console.log(item.allowedDepartments.includes(userDepartment));
+
+    return item.allowedDepartments.includes(userDepartment);
+  };
+
   return (
     <Sidebar>
       <SidebarHeader>
@@ -88,7 +119,7 @@ export default function AppSidebar() {
           <SidebarMenuItem className="flex">
             <SidebarMenuButton size="lg" asChild>
               <Link href="/" className="font-semibold">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg  text-sidebar-primary-foreground">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg text-sidebar-primary-foreground">
                   <Image
                     src={
                       "https://psba.gop.pk/wp-content/uploads/2025/03/cropped-SAHULAT-BAZAAR-LOGO.png"
@@ -96,7 +127,7 @@ export default function AppSidebar() {
                     alt="Company Logo"
                     width={40}
                     height={40}
-                    className=" mt-5 object-contain mb-4"
+                    className="mt-5 object-contain mb-4"
                     priority
                   />
                 </div>
@@ -117,9 +148,11 @@ export default function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu className="mt-5">
               {navItems.map((item) => {
-                if (item.superAdminOnly && user?.role !== "superadmin") {
+                // Check if user can access this route
+                if (!canAccessRoute(item)) {
                   return null;
                 }
+
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton

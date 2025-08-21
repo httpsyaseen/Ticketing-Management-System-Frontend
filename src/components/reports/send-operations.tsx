@@ -14,6 +14,7 @@ import {
 import { Send, AlertTriangle } from "lucide-react";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
+import { useAuth } from "@/context/auth-context";
 
 export function SendOperationsDialog({
   id,
@@ -26,12 +27,15 @@ export function SendOperationsDialog({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [shouldShow, setShouldShow] = useState(true);
 
+  const { user } = useAuth();
   const handleSendToOperations = async () => {
     try {
       await api.patch(`/report/clear-by-monitoring/${id}`);
       toast.success("Report sent to Operations Department successfully!");
       setIsOpen(false);
+      setShouldShow(false);
     } catch (error) {
       console.error("Error sending report to Operations:", error);
       toast.error("Failed to send report. Please try again.");
@@ -43,6 +47,14 @@ export function SendOperationsDialog({
   const handleCancel = () => {
     setIsOpen(false);
   };
+
+  if (!shouldShow) {
+    return null;
+  }
+
+  if (!user?.assignedTo.name.includes("Monitoring")) {
+    return null;
+  }
 
   if (!clearedByIT || cleared) {
     return null;

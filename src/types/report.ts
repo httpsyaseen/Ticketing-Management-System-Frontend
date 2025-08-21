@@ -6,7 +6,7 @@ export interface Market {
 export interface MarketReport {
   _id: string;
   marketId: Market;
-  createdAt: string;
+  createdAt: Date;
   updatedAt: string; // ✅ required
   isSubmitted: boolean;
   submittedAt?: string;
@@ -22,7 +22,7 @@ export interface MarketReport {
 
 export interface WeeklyReport {
   _id: string;
-  createdAt: string;
+  createdAt: Date;
   marketsReport: MarketReport[]; // ✅ consistent
   clearedByIt: boolean;
   clearedByItAt: string | null;

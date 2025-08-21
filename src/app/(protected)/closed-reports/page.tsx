@@ -30,20 +30,19 @@ export default function CloseReportPage() {
     }
 
     setIsLoading(true);
-   try {
-  const res = await api.post("/report/get-report-by-date",{
+    try {
+      const res = await api.post("/report/get-report-by-date", {
         startDate: selectDate,
         endDate: fromDate,
       });
-      
-      setReports(res?.data.data.report);
-      console.log(res?.data)
-    } catch (error) {
-  showError(error);
-} finally {
-  setIsLoading(false);
-}
 
+      setReports(res?.data.data.report);
+      console.log(res?.data);
+    } catch (error) {
+      showError(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -55,9 +54,7 @@ export default function CloseReportPage() {
     setFromDate(today.toISOString().split("T")[0]);
   }, []);
 
-  const columns = getWeeklyReportColumns((report) =>
-    generateExcelReport(report)
-  );
+  const columns = getWeeklyReportColumns();
 
   return (
     <div className="flex bg-gray-50 flex-1 flex-col gap-4 p-6">
@@ -87,7 +84,6 @@ export default function CloseReportPage() {
               </span>
             )}
           </Button>
-
         </div>
       </div>
 

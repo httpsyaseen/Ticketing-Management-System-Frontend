@@ -28,12 +28,14 @@ export function ClearOperationsDialog({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [shouldShow, setShouldShow] = useState(true);
 
   const handleSendToOperations = async () => {
     try {
       await api.patch(`/report/clear-by-operations/${id}`);
       toast.success("Report sent to Operations Department successfully!");
       setIsOpen(false);
+      setShouldShow(false);
     } catch (error) {
       console.error("Error sending report to Operations:", error);
       toast.error("Failed to send report. Please try again.");
@@ -45,6 +47,10 @@ export function ClearOperationsDialog({
   const handleCancel = () => {
     setIsOpen(false);
   };
+
+  if (!shouldShow) {
+    return null;
+  }
 
   if (!clearedByIT || !clearedByMonitoring || cleared) {
     return null;
