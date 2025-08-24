@@ -53,7 +53,7 @@ export function DataTable<TData, TValue>({
   console.log(data)
   return (
     <div>
-      <div className="rounded-md border bg-white mx-10">
+      <div className="rounded-md border  sm:max-h-[500px] overflow-auto  bg-white mx-10">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

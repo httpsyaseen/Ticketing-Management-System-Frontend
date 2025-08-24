@@ -32,6 +32,7 @@ interface SearchableSelectProps {
   onValueChange: (value: string) => void;
   placeholder?: string;
   disabled?: boolean;
+  className: string
 }
 
 export function SearchableSelect({
@@ -39,6 +40,7 @@ export function SearchableSelect({
   value,
   onValueChange,
   placeholder = "Select an item...",
+  className,
   disabled = false,
 }: SearchableSelectProps) {
   const [open, setOpen] = React.useState(false);
@@ -52,7 +54,7 @@ export function SearchableSelect({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900  dark:text-gray-50  transition-colors font-normal"
+          className={`w-full justify-between px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900  dark:text-gray-50  transition-colors font-normal ${className}`}
           disabled={disabled}
         >
           {selectedItem ? selectedItem.name : placeholder}

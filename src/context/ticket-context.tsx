@@ -24,6 +24,9 @@ type TicketContextType = {
   addTicket?: (ticket: Ticket) => void;
   viewTicket?: Ticket;
   setViewTicket?: React.Dispatch<React.SetStateAction<Ticket>>;
+  fetchUsers?: () => Promise<void>;
+  createDepartment?: (name: string) => Promise<void>;
+  createMarket?: (name: string) => Promise<void>;
 };
 
 type Market = {
@@ -41,6 +44,7 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
   const [markets, setMarkets] = useState<Market[]>([]);
   const [viewTicket, setViewTicket] = useState<Ticket>({} as Ticket);
 
+  // ✅ Fetch departments + markets
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
@@ -51,7 +55,7 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
       } catch (error) {
         if (axios.isAxiosError(error)) {
           toast.error(
-            error?.response?.data?.message || "Failed to fetch departments"
+            error?.response?.data?.message || "Failed to fetch departments/markets"
           );
         }
       }
@@ -60,6 +64,52 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
     fetchDepartments();
   }, []);
 
+  // ✅ Fetch users (only when needed, e.g. for superadmin)
+  const fetchUsers = async () => {
+    try {
+      const res = await api.get("/users/getallusers");
+      return res.data.data.users;
+    } catch {
+      toast.error("Failed to fetch users");
+      return [];
+    }
+  };
+
+  // ✅ Create Department
+  const createDepartment = async (name: string) => {
+    if (!name) {
+      toast.error("Department name is required");
+      return;
+    }
+    try {
+      const { data } = await api.post("department/create-department", { name });
+      setDepartments((prev) => [...prev, data.data]);
+      toast.success("Department created successfully!");
+    } catch (error: any) {
+      const message =
+        error.response?.data?.message || "Failed to create department";
+      toast.error(message);
+    }
+  };
+
+  // ✅ Create Market
+  const createMarket = async (name: string) => {
+    if (!name) {
+      toast.error("Market name is required");
+      return;
+    }
+    try {
+      const { data } = await api.post("market/create-market", { name });
+      setMarkets((prev) => [...prev, data.data]);
+      toast.success("Market created successfully!");
+    } catch (error: any) {
+      const message =
+        error.response?.data?.message || "Failed to create market";
+      toast.error(message);
+    }
+  };
+
+  // ✅ Add ticket
   const addTicket = (ticket: Ticket) => {
     setMyTickets((prev) => [ticket, ...prev]);
     setAssignTickets((prev) => [ticket, ...prev]);
@@ -79,6 +129,9 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
         viewTicket,
         setViewTicket,
         setMarkets,
+        fetchUsers,
+        createDepartment,
+        createMarket,
       }}
     >
       {children}
