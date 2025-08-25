@@ -60,8 +60,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           const { data } = await api.get(`/users/verify`);
           setUser(data.user);
           setIsAuthenticated(true);
-          // router.replace("/dashboard");
         } catch (error) {
+          console.log("first error");
           showError(error);
           logout();
         }
