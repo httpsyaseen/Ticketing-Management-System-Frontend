@@ -59,11 +59,11 @@ export default function UserManagementSystem() {
         setUsers(usersRes.data.data.users);
         setFilteredUsers(usersRes.data.data.users);
 
-        const deptsRes = await api.get("/get-all-departments");
-        setDepartments(deptsRes.data.data);
+        const deptsRes = await api.get("/department/get-all-departments");
+        setDepartments(deptsRes.data.data?.departments);
 
-        const marketsRes = await api.get("/get-all-markets");
-        setMarkets(marketsRes.data.data);
+        const marketsRes = await api.get("/market/get-all-markets");
+        setMarkets(marketsRes.data.data?.markets);
       } catch (error) {
         toast.error("Failed to fetch data");
       } finally {
@@ -209,6 +209,7 @@ export default function UserManagementSystem() {
         createUserDialog={createUserDialog}
         setIsCreateUserDialog={setIsCreateUserDialog}
         name={name}
+        users={users}
         setName={setName}
         email={email}
         setEmail={setEmail}

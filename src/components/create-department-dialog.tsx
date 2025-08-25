@@ -70,6 +70,7 @@ export  function CreateDepartementDialog({ createDepartmentOpen, setCreateDepart
                     </div>
                     <DialogFooter className="pt-4  dark:border-gray-800">
                         <Button
+                        onClick={()=> setCreateDepartmentOpen(!createDepartmentOpen)}
                             type="submit"
                             className="w-full bg-green-500 sm:w-auto px-6 py-3 text-lg font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
                         >

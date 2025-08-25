@@ -44,7 +44,10 @@ export function SearchableSelect({
   disabled = false,
 }: SearchableSelectProps) {
   const [open, setOpen] = React.useState(false);
-  const selectedItem = items.find((item) => item._id === value);
+const safeItems = Array.isArray(items) ? items : [];
+
+const selectedItem = safeItems.find((item) => item._id === value);
+
   const { user } = useAuth();
 
   return (
