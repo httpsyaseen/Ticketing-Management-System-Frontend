@@ -185,6 +185,7 @@ export function CreateTicketDialog() {
                 {assignedToLabel}
               </Label>
               <SearchableSelect
+              className=""
                 items={assignedToList}
                 value={assignedTo}
                 onValueChange={setAssignedTo}
