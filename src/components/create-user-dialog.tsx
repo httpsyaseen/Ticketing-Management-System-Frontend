@@ -20,6 +20,8 @@ import api from "@/lib/api";
 import { useTicket } from "@/context/ticket-context";
 import { SearchableSelect } from "./ui/searchable-select";
 import { AvatarIcon, EnvelopeClosedIcon, LockClosedIcon, MixerHorizontalIcon, PersonIcon } from "@radix-ui/react-icons";
+import { useAuth } from "@/context/auth-context";
+import { User } from "@/types/userType";
 
 interface CreateUserDialogProps {
     mode: string,
@@ -37,10 +39,12 @@ interface CreateUserDialogProps {
     setAssignedTo: React.Dispatch<React.SetStateAction<string>>;
     createUserDialog: boolean;
     setIsCreateUserDialog: React.Dispatch<React.SetStateAction<boolean>>;
+    users:User[]
 }
 
 
 export function CreateUserDialog({
+    users,
     mode,
     name,
     setName,
@@ -55,36 +59,70 @@ export function CreateUserDialog({
     createUserDialog,
     setIsCreateUserDialog
 }: CreateUserDialogProps) {
+    const {user} = useAuth()
     const { departments, markets } = useTicket()
-    const handleSubmit = async (event: React.FormEvent) => {
-        event.preventDefault();
 
-        if (!name || !email || !password || !assignedToType || !assignedTo) {
-            toast.error("Please fill in all fields.");
-            return;
-        }
+    const isAlreadyAssigned = () => {
+  if (!assignedToType || !assignedTo) return false;
 
-        try {
-            await api.post("/users/createuser", {
-                name,
-                email,
-                password,
-                assignedToType,
-                assignedTo,
-            });
+  if (assignedToType === "Department") {
+    return departments?.some((dept) => dept._id === assignedTo && dept?._id);
+  }
 
-            toast.success("User created successfully!");
-            setIsCreateUserDialog(false);
-            setName("");
-            setEmail("");
-            setPassword("");
-            setAssignedToType("");
-            setAssignedTo("");
-        } catch (error: any) {
-            console.error("Error creating user:", error);
-            toast.error(error.response?.data?.message || "Failed to create user.");
-        }
-    };
+  if (assignedToType === "Market") {
+    return markets?.some((market) => market._id === assignedTo && market?._id);
+  }
+
+  return false;
+};
+
+   const handleSubmit = async (event: React.FormEvent) => {
+  event.preventDefault();
+
+  if (!name || !email || !password || !assignedToType || !assignedTo) {
+    toast.error("Please fill in all fields.");
+    return;
+  }
+ if (mode === "create" && isAlreadyAssigned()) {
+    toast.error(`This ${assignedToType} is already assigned to another user.`);
+    return;
+  }
+
+  try {
+    if (mode === "edit") {
+      await api.patch(`/users/updateuser/${user?._id}`, {
+        name,
+        password,
+      });
+
+      toast.success("User updated successfully!");
+    } else {
+      await api.post("/users/createuser", {
+        name,
+        email,
+        password,
+        assignedToType,
+        assignedTo,
+      });
+
+      toast.success("User created successfully!");
+    }
+
+    setIsCreateUserDialog(false);
+    setName("");
+    setEmail("");
+    setPassword("");
+    setAssignedToType("");
+    setAssignedTo("");
+  } catch (error: any) {
+    console.error("Error saving user:", error);
+    toast.error(
+      error.response?.data?.message ||
+        (mode === "edit" ? "Failed to update user." : "Failed to create user.")
+    );
+  }
+};
+
 
     const assignedToList =
         assignedToType === "Department" ? departments : assignedToType === "Market" ? markets : [];
@@ -95,6 +133,16 @@ export function CreateUserDialog({
             : assignedToType === "Market"
                 ? "Market"
                 : "Select Type First";
+
+const filteredAssignedToList = assignedToList.filter((item) => {
+  return !users?.some(
+    (u) => u.assignedToType === assignedToType && u.assignedTo?._id === item._id
+  );
+});
+
+
+
+
 
     return (
         <Dialog open={createUserDialog} onOpenChange={setIsCreateUserDialog}>
@@ -151,6 +199,7 @@ export function CreateUserDialog({
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}
                                             placeholder="john.smith@company.com"
+                                            disabled={mode !== "edit" ? false: true}
                                         />
                                         <EnvelopeClosedIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                                     </div>
@@ -167,6 +216,7 @@ export function CreateUserDialog({
                                     <div className="relative">
                                         <input
                                             id="userPassword"
+                                            //  type={showPassword ? "text" : "password"}
                                             className="w-full pl-10 bg-white pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             value={password}
                                             onChange={(e) => setPassword(e.target.value)}
@@ -177,6 +227,7 @@ export function CreateUserDialog({
                                             type="button"
                                             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                                         >
+                                            {/* {showPassword ? "Hide" : "Show"} */}
                                         </button>
                                     </div>
 
@@ -190,11 +241,16 @@ export function CreateUserDialog({
                             </div>
                         </div>
                         {/* Assign To Type */}
+                        {
+                                mode !== "edit" &&
                         <div className="grid grid-cols-1 sm:grid-cols-1 bg-gray-50 p-5 rounded-xl border border-gray-200 gap-4">
                             <h3 className="text-lg font-semibold text-gray-800 mb-5 flex items-center">
                                 <MixerHorizontalIcon className="w-5 h-5 mr-2 text-indigo-500" />
                                 Role & Assignment
                             </h3>
+                            {/* New Type dropdown */}
+                            
+                            
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
                                 <div className="grid  gap-2">
@@ -211,6 +267,7 @@ export function CreateUserDialog({
                                         }}
                                         value={assignedToType}
                                         required
+                                    //    disabled={name?.assignedToType === "Market"}
                                     >
                                         <SelectTrigger
                                             id="assignedToType"
@@ -234,7 +291,7 @@ export function CreateUserDialog({
                                     </Label>
                                     <SearchableSelect
                                         className="bg-white"
-                                        items={assignedToList}
+                                        items={filteredAssignedToList}
                                         value={assignedTo}
                                         onValueChange={setAssignedTo}
                                         placeholder={`Select a ${assignedToType || "type"}...`}
@@ -243,6 +300,7 @@ export function CreateUserDialog({
                                 </div>
                             </div>
                         </div>
+}
 
                         <DialogFooter className="pt-4 border-t border-gray-200 dark:border-gray-800">
                             <Button
