@@ -73,20 +73,12 @@ const navItems = [
   },
 
   {
-    title: "Users",
-    icon: Users,
-    url: "/users",
-    superAdminOnly: true,
-    allowedDepartments: ["all"],
-  },
-  {
     title: "User Mangement",
     icon: Users,
     url: "/user-management",
     superAdminOnly: true,
     allowedDepartments: ["all"],
   },
-  
 ];
 
 export default function AppSidebar() {

@@ -79,6 +79,10 @@ export default function ReferTicketDialog({
     setIsOpen(false);
   };
 
+  if (user?.role === "user") {
+    return null;
+  }
+
   // Only show the button if ticket status is not resolved
   if (ticket.status === "resolved" || ticket.status === "closed") {
     return null;
