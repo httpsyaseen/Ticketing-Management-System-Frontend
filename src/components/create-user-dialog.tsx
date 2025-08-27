@@ -52,6 +52,7 @@ interface CreateUserDialogProps {
   createUserDialog: boolean;
   setIsCreateUserDialog: React.Dispatch<React.SetStateAction<boolean>>;
   users: User[];
+  editUser: User;
 }
 
 export function CreateUserDialog({
@@ -69,6 +70,7 @@ export function CreateUserDialog({
   setAssignedTo,
   createUserDialog,
   setIsCreateUserDialog,
+  editUser,
 }: CreateUserDialogProps) {
   const { user } = useAuth();
   const { departments, markets } = useTicket();
@@ -83,7 +85,7 @@ export function CreateUserDialog({
 
     try {
       if (mode === "edit") {
-        await api.patch(`/users/updateuser/${user?._id}`, {
+        await api.patch(`/users/updateuser/${editUser?._id}`, {
           name,
           password,
         });

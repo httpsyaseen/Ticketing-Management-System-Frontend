@@ -27,7 +27,9 @@ export default function UserManagementSystem() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [assignedToType, setAssignedToType] = useState<"Department" | "Market" | "">("");
+  const [assignedToType, setAssignedToType] = useState<
+    "Department" | "Market" | ""
+  >("");
   const [assignedTo, setAssignedTo] = useState<string>("");
 
   // which flow is active
@@ -96,7 +98,7 @@ export default function UserManagementSystem() {
     setEmail(u?.email || "");
     setAssignedToType(u?.assignedToType || "");
     setAssignedTo(u?.assignedTo?._id ?? "");
-    setPassword(""); 
+    setPassword("");
     setOpenDialog("edit");
     setIsCreateUserDialog(true);
   };
@@ -118,11 +120,14 @@ export default function UserManagementSystem() {
     try {
       await api.patch(`/users/deleteuser/${selectedUser._id}`);
       setUsers((prev) =>
-        prev.map((u) => (u._id === selectedUser._id ? { ...u, active: false } : u))
+        prev.map((u) =>
+          u._id === selectedUser._id ? { ...u, active: false } : u
+        )
       );
       toast.success("User deactivated successfully!");
     } catch (error: any) {
-      const message = error.response?.data?.message || "Failed to deactivate user";
+      const message =
+        error.response?.data?.message || "Failed to deactivate user";
       toast.error(message);
     } finally {
       setIsDeleteDialogOpen(false);
@@ -134,9 +139,12 @@ export default function UserManagementSystem() {
     <div className="flex bg-gray-50 flex-1 flex-col gap-4 p-6">
       <div className="flex justify-between ">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">User Management System</h1>
+          <h1 className="text-3xl font-bold text-slate-900">
+            User Management System
+          </h1>
           <p className="text-slate-600 text-sm mt-1">
-            Manage departments, markets, and user accounts across your organization
+            Manage departments, markets, and user accounts across your
+            organization
           </p>
         </div>
         <div>
@@ -204,7 +212,7 @@ export default function UserManagementSystem() {
       />
 
       <CreateUserDialog
-        key={`${openDialog}-${editUser?._id ?? "new"}`}  
+        key={`${openDialog}-${editUser?._id ?? "new"}`}
         mode={openDialog === "edit" ? "edit" : "create"}
         createUserDialog={createUserDialog}
         setIsCreateUserDialog={setIsCreateUserDialog}
@@ -219,6 +227,7 @@ export default function UserManagementSystem() {
         setAssignedTo={setAssignedTo}
         assignedToType={assignedToType}
         setAssignedToType={setAssignedToType}
+        editUser={editUser || ({} as User)}
       />
 
       <CreateMarketDialog
