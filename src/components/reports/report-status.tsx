@@ -52,7 +52,11 @@ export function ReportStatusTimeline({ report }: ReportStatusTimelineProps) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button
+          variant="outline"
+          size="default"
+          className="bg-green-600 text-white"
+        >
           <Clock className="h-4 w-4 mr-2" />
           Current Status
         </Button>

@@ -30,7 +30,7 @@ import { SendOperationsDialog } from "@/components/reports/send-operations";
 import { ClearOperationsDialog } from "@/components/reports/clear-operations";
 import { ReportStatusTimeline } from "@/components/reports/report-status";
 
-const formatDate = (dateString: string) => {
+const formatDate = (dateString: string | Date) => {
   const date = new Date(dateString);
   const options: Intl.DateTimeFormatOptions = {
     day: "numeric",
@@ -68,7 +68,7 @@ export default function ReportUpdatePage() {
   const fetchWeeklyReport = async (id: string) => {
     try {
       setLoading(true);
-      const { data } = await api(`/report/get-weekly-report/${id}`);
+      const { data } = await api(`/report/${id}`);
       setReportData(data.data.report);
     } catch (error) {
       console.error("Error fetching weekly report:", error);

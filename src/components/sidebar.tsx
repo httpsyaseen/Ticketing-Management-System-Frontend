@@ -7,6 +7,8 @@ import {
   ChartAreaIcon,
   Users,
   FolderClosed,
+  LucideGitGraph,
+  ChartLineIcon,
 } from "lucide-react";
 
 import {
@@ -62,7 +64,7 @@ const navItems = [
   },
   {
     title: "Old Weekly Reports",
-    icon: ChartAreaIcon,
+    icon: ChartLineIcon,
     url: "/closed-reports",
     superAdminOnly: false,
     allowedDepartments: [

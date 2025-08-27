@@ -114,7 +114,7 @@ export function CreateTicketDialog() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="px-6 py-3 text-lg font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+        <Button className="px-6 py-3 text-lg bg-green-600 font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
           <TicketIcon className="mr-2 h-5 w-5" /> Create Ticket
         </Button>
       </DialogTrigger>
@@ -185,7 +185,7 @@ export function CreateTicketDialog() {
                 {assignedToLabel}
               </Label>
               <SearchableSelect
-              className=""
+                className=""
                 items={assignedToList}
                 value={assignedTo}
                 onValueChange={setAssignedTo}

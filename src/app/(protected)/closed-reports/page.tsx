@@ -61,7 +61,9 @@ export default function CloseReportPage() {
       {/* Page Header */}
       <div className="flex justify-between mx-10">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Closed Reports</h1>
+          <h1 className="text-3xl font-bold text-slate-900">
+            Previous Weekly Reports
+          </h1>
           <p className="text-slate-600 text-sm mt-1">
             Search, review, and download your completed reports
           </p>

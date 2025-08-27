@@ -28,7 +28,7 @@ import { SendMonitoringDialog } from "@/components/reports/send-monitoring";
 import { SendOperationsDialog } from "@/components/reports/send-operations";
 import { ClearOperationsDialog } from "@/components/reports/clear-operations";
 import { ReportStatusTimeline } from "@/components/reports/report-status";
-const formatDate = (dateString: string) => {
+const formatDate = (dateString: string | Date) => {
   const date = new Date(dateString);
   const options: Intl.DateTimeFormatOptions = {
     day: "numeric",
@@ -248,6 +248,7 @@ export default function SecurityReportsPage({
           <Button
             onClick={() => reportData && generateExcelReport(reportData)}
             variant="outline"
+            className="bg-green-600 text-white"
           >
             <FileSpreadsheet className="h-4 w-4 mr-2" />
             Generate Excel Report
